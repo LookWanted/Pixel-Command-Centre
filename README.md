@@ -1,62 +1,71 @@
-# HiveGrid™ // Full-Screen Hero Landing Page & Pixel Command Center
+# HiveGrid: Pixel Command Center
 
-A full-screen interactive hero landing page and 3D simulation command center for **HiveGrid™**, an autonomous cooperative microbot swarm built to rescue Baymax from a corrupted red combat chip.
+HiveGrid is an interactive 3D command-center experience built around a Pixel swarm and Baymax. It combines a cinematic landing page with a playable real-time simulation: direct the swarm, learn from combat encounters, and work to remove Baymax's red combat chip.
 
----
+## What’s included
 
-## 🌟 Hero Landing Page Features
+- A cinematic landing experience with a looping portal backdrop, a cursor-responsive Pixel model, and the supplied soundtrack.
+- A real-time react-three-fiber arena featuring Baymax and a growing Pixel swarm.
+- Swarm behaviors for distraction, backup roles, hive learning, and chip extraction.
+- A focused command interface with live status, a learning signal chart, activity log, playback controls, and roster.
+- Manual mode: move Baymax with `W`, `A`, `S`, and `D` (or the arrow keys), use `Space` to boost, and click the arena to neutralize the nearest Pixel.
+- Success and failure outcomes: a completed extraction can restore Baymax, while combat can also leave him affected.
 
-### 1. Fonts & Typography
-- Loaded via `index.html`:
-  - **Heading font**: `HelveticaNowDisplay-Medium`
-  - **Body font**: `HelveticaNowDisplayW01-Rg`
-- CSS variables defined in `index.css`:
-  - `--font-heading`: `'HelveticaNowDisplay-Medium', 'Helvetica Neue', Arial, sans-serif`
-  - `--font-body`: `'HelveticaNowDisplayW01-Rg', 'Helvetica Neue', Arial, sans-serif`
-- Entire page uses `var(--font-body)` except the logo text which uses `var(--font-heading)`.
+## Tech stack
 
-### 2. Mouse-Scrub Background: 3D Robot Model
-- Rather than an arbitrary video of a person, the landing page features Hiro's actual **3D Textured Microbot Model (`pixel-textured.glb`)** in the background, positioned at `70% center` (right-hand side of the viewport).
-- As you move the mouse horizontally across the window, the 3D robot smoothly scrubs and rotates 360 degrees!
-- A discreet bottom-right pill lets you toggle between the 3D model and the mouse-scrubbed Cloudfront video.
+- React 18 + TypeScript
+- Vite
+- Three.js through `@react-three/fiber` and `@react-three/drei`
+- Zustand for simulation state
+- Framer Motion and CSS for interface motion
 
-### 3. Top Navigation Bar (Fixed, z-index: 10)
-- **Logo (left)**: Text `HiveGrid™` with decorative asterisk `✳︎`.
-- **Desktop Links (center)**: `Simulator`, `Pixels`, `Story`, `Team` separated by commas.
-- **Desktop CTA (right)**: `Launch the demo` (underlined, launches the simulator).
-- **Mobile Menu**: Responsive 3-line hamburger with smooth 45° cross transition and full-screen backdrop-blurred overlay.
+## Getting started
 
-### 4. Hero Section
-- **Blurred Intro Label**:
-  - `Hey there, meet P.I.X.E.L,`
-  - `HiveGrid's Pixel Intelligence for eXtraction, Evasion & Learning`
-  - Filter: `blur(4px)`, font size: `clamp(18px, 4vw, 26px)`.
-- **Typewriter Text**:
-  - *"You made it through the portal. One robot couldn't save Baymax, so we built a swarm. Ready to train it?"*
-  - Animated with custom `useTypewriter` hook and blinking white cursor (`animate-cursor-blink`).
-- **Action Pill Buttons (Fade + Slide up at 400ms)**:
-  - ⚪ `Launch the simulator` (transitions to Pixel Command Center)
-  - ⚪ `Meet the Pixels` (opens 3D model specifications modal)
-  - ⚪ `Watch the story` (opens Big Hero 6 mission log)
-  - ⚪ `See how the hive learns` (explains the 4 doctrines)
-  - ⭕ `Reach us: hello@hivegrid.dev` with 12x12 inline copy icon (copies to clipboard with instant feedback)
+### Requirements
 
----
+- Node.js 18 or newer
+- npm
 
-## 🎮 Pixel Command Center Simulator
-
-Clicking **"Launch the simulator"** or **"Launch the demo"** launches into the 3D battlefield:
-1. **Split Attention**: Baymax gets confused by multiple microbots, spinning erratically and wasting attack intervals.
-2. **Autonomous Backup**: When a specialist unit falls, a reserve decoy immediately takes over its slot with a ring flash.
-3. **Real-time Hive Mind**: Observations instantly propagate across all microbots, boosting dodge rates up to 85%+.
-4. **Tripartite Teamwork**: Holder clamps the arm, Puller tethers from behind, Grabber extracts the red chip.
-
----
-
-## 🚀 Running the Project
+### Install and run
 
 ```bash
-cd "/Users/namishdawar/Desktop/pixel-command-center"
-npm run dev     # Serving live at http://127.0.0.1:5173/
-npm run build   # Type-checked production bundle
+npm install
+npm run dev
 ```
+
+Vite will print the local URL in the terminal. Open it in a modern desktop browser.
+
+### Production build
+
+```bash
+npm run build
+npm run preview
+```
+
+## How to use it
+
+1. Explore the landing page and move the pointer to inspect the Pixel model.
+2. Choose **Launch Command Center**.
+3. Use the mission actions to distract Baymax, share hive learning, and begin chip removal.
+4. Turn on **Manual mode** if you want direct Baymax movement with the keyboard.
+5. Open **How it works** for the complete control guide and objective.
+
+## Media and models
+
+Project media is served from `public/assets`, including the portal video, soundtrack, Pixel GLB, Baymax OBJ, and Satoshi font files. Replace an asset in that directory using the same filename to update the experience without changing application code.
+
+## Audio note
+
+The landing page requests soundtrack playback as soon as it opens and retries on first interaction. Some browsers intentionally block unmuted autoplay on a fresh page load; this restriction is controlled by the browser and cannot be overridden by a website. If that happens, any click or key press starts the soundtrack.
+
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local development server. |
+| `npm run build` | Type-check and create a production build. |
+| `npm run preview` | Serve the production build locally. |
+
+## Project status
+
+This is a fictional interactive training scenario inspired by *Big Hero 6*. It is a creative demo, not an operational control system.
