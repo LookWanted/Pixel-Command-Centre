@@ -145,6 +145,15 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       <BaymaxCadAsset pacified={isPacified} onReady={handleCadReady} />
+      {/* A light face module keeps Baymax's iconic head legible on the imported CAD body. */}
+      {cadReady && (
+        <group position={[0, 3.24, 0.1]}>
+          <mesh castShadow scale={[1.02, 0.78, 0.75]} material={bodyMaterial}><sphereGeometry args={[0.7, 28, 22]} /></mesh>
+          <mesh position={[0, 0.01, 0.53]}><boxGeometry args={[0.48, 0.026, 0.025]} /><meshBasicMaterial color="#13191a" /></mesh>
+          <mesh position={[-0.24, 0.01, 0.53]}><sphereGeometry args={[0.07, 16, 16]} /><meshBasicMaterial color="#13191a" /></mesh>
+          <mesh position={[0.24, 0.01, 0.53]}><sphereGeometry args={[0.07, 16, 16]} /><meshBasicMaterial color="#13191a" /></mesh>
+        </group>
+      )}
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
         position={[0, 4.4, 0]}

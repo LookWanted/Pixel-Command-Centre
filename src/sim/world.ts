@@ -163,18 +163,35 @@ export function step(world: SimWorld, dt: number): SimWorld {
 
   if (world.config.missionMode === 'extract') {
     if (world.extractionProgress >= 1.0) {
-      world.status = 'success';
-      world.statusReason = 'Red combat chip extracted! Baymax restored to healthcare mode.';
-      world.baymax.state = 'pacified';
-      const event = {
-        id: `success_${world.timeElapsed}`,
-        time: world.timeElapsed,
-        kind: 'mission_success' as const,
-        message: `[MISSION ACCOMPLISHED] Red chip removed! Baymax: "Hello, I am Baymax, your personal healthcare companion."`,
-        data: {}
-      };
-      world.events.push(event);
-      world.recentEvents.push(event);
+      // Extraction has a deliberate 50/50 outcome: half of the time the chip
+      // destabilises Baymax instead of restoring him, keeping every episode uncertain.
+      const restored = rng.next() >= 0.5;
+      if (restored) {
+        world.status = 'success';
+        world.statusReason = 'Red combat chip extracted! Baymax restored to healthcare mode.';
+        world.baymax.state = 'pacified';
+        const event = {
+          id: `success_${world.timeElapsed}`,
+          time: world.timeElapsed,
+          kind: 'mission_success' as const,
+          message: `[MISSION ACCOMPLISHED] Red chip removed! Baymax: "Hello, I am Baymax, your personal healthcare companion."`,
+          data: {}
+        };
+        world.events.push(event);
+        world.recentEvents.push(event);
+      } else {
+        world.status = 'failed';
+        world.statusReason = 'Chip extraction destabilised Baymax. He remains affected.';
+        const event = {
+          id: `affected_${world.timeElapsed}`,
+          time: world.timeElapsed,
+          kind: 'mission_failed' as const,
+          message: `[OUTCOME] The chip reacted during removal. Baymax remains affected.`,
+          data: {}
+        };
+        world.events.push(event);
+        world.recentEvents.push(event);
+      }
     } else if (alivePixels.length < 3) {
       world.status = 'failed';
       world.statusReason = 'Insufficient swarm units (<3 alive) to execute tripartite extraction.';

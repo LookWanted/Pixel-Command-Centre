@@ -122,14 +122,14 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
           loop
           preload="auto"
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-            use3DModel ? 'opacity-50 brightness-75' : 'opacity-55 brightness-75'
+            use3DModel ? 'opacity-70 brightness-90' : 'opacity-75 brightness-90'
           }`}
           style={{ objectPosition: 'center center', transform: 'scale(1.34)' }}
         />
       </div>
       <audio ref={soundtrackRef} src="/assets/portal_soundtrack.mp3" autoPlay loop preload="auto" />
 
-      <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
       {/* 2. Optional 3D Model Layer over the Portal Video */}
       {use3DModel && (

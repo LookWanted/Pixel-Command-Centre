@@ -33,15 +33,15 @@ const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
     group.position.lerp(new THREE.Vector3(x, 0.42 + bob, z), Math.min(1, delta * 14));
     const speed = Math.hypot(pixel.vel.x, pixel.vel.y);
     if (speed > 4) group.rotation.y = -Math.atan2(pixel.vel.y, pixel.vel.x) + Math.PI / 2;
-    const scale = pixel.dodgeCooldown > 0.4 ? 0.34 : pixel.inContactWithBaymax ? 0.38 : 0.31;
+    const scale = pixel.dodgeCooldown > 0.4 ? 0.42 : pixel.inContactWithBaymax ? 0.47 : 0.39;
     group.scale.setScalar(scale);
   });
 
   const core = ROLE_HEX[pixel.role] || '#64e6af';
   return <group ref={groupRef}>
     <primitive object={model} />
-    <mesh position={[0, 0.35, 0]}><sphereGeometry args={[0.15, 16, 16]} /><meshStandardMaterial color={core} emissive={core} emissiveIntensity={2.4} /></mesh>
-    <pointLight color={core} intensity={0.6} distance={2.2} />
+    <mesh position={[0, 0.42, 0]}><sphereGeometry args={[0.16, 16, 16]} /><meshStandardMaterial color={core} emissive={core} emissiveIntensity={2.4} /></mesh>
+    <pointLight color={core} intensity={0.7} distance={2.6} />
   </group>;
 };
 

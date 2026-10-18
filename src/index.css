@@ -12,7 +12,7 @@
 :root {
   --font-heading: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-brand-yellow: #F7E600;
   --color-brand-orange: #FF9F00;
   --color-brand-red: #E10600;
