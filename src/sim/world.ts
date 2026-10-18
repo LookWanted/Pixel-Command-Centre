@@ -193,13 +193,15 @@ export function step(world: SimWorld, dt: number): SimWorld {
         world.recentEvents.push(event);
       }
     } else if (alivePixels.length === 0) {
-      world.status = 'failed';
-      world.statusReason = 'All Pixel commanders were neutralized.';
+      // With no surviving Pixel commanders, every nanobot formation loses its
+      // controller. This is Baymax's combat victory, not a mission failure.
+      world.status = 'success';
+      world.statusReason = 'All Pixel commanders were neutralized. Baymax secured the arena.';
       const event = {
-        id: `failed_${world.timeElapsed}`,
+        id: `baymax_victory_${world.timeElapsed}`,
         time: world.timeElapsed,
-        kind: 'mission_failed' as const,
-        message: `[MISSION FAILED] All Pixel commanders were neutralized.`,
+        kind: 'mission_success' as const,
+        message: `[COMBAT VICTORY] All Pixel commanders were neutralized. Nanobot network offline.`,
         data: {}
       };
       world.events.push(event);

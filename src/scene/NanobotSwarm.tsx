@@ -61,10 +61,12 @@ function formationMatrix(
   // circles Baymax independently rather than moving as a permanent formation.
   const seed = index * 1.618;
   const attackAngle = time * (1.1 + (index % 7) * 0.13) + seed;
-  const attackRadius = 1.2 + ((Math.sin(time * 1.9 + seed) + 1) * 1.2) + (index % 4) * 0.22;
-  const attackX = bx + Math.cos(attackAngle) * attackRadius + Math.sin(time * 4.4 + seed) * 0.36;
-  const attackZ = bz + Math.sin(attackAngle * 1.27) * attackRadius + Math.cos(time * 3.8 + seed) * 0.36;
-  const attackY = 0.18 + Math.abs(Math.sin(time * 2.8 + seed)) * 1.85;
+  // Attack phase spreads each nanobot across the arena rather than piling a
+  // hundred parts beneath Baymax. Their paths still repeatedly dive inward.
+  const attackRadius = 5.5 + ((Math.sin(time * 1.9 + seed) + 1) * 2.7) + (index % 10) * 0.62;
+  const attackX = bx + Math.cos(attackAngle) * attackRadius + Math.sin(time * 4.4 + seed) * 0.7;
+  const attackZ = bz + Math.sin(attackAngle * 1.27) * attackRadius + Math.cos(time * 3.8 + seed) * 0.7;
+  const attackY = 0.12 + Math.abs(Math.sin(time * 2.8 + seed)) * 2.4;
 
   let fx = bx;
   let fy = 1.2;
