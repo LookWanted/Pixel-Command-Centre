@@ -43,7 +43,9 @@ export const BaymaxObjAsset: React.FC<{ pacified: boolean; onReady: () => void }
   useEffect(() => { onReady(); }, [onReady]);
 
   return (
-    <group position={[0, 0.04, 0]} scale={[0.06, 0.046, 0.06]} rotation={[0, Math.PI, 0]}>
+    <group position={[0, 0.04, 0]} scale={[0.052, 0.06, 0.052]} rotation={[0, Math.PI, 0]}>
+      {/* Preserve the uploaded form's silhouette: a taller, upright Baymax with
+          no squash applied across the body width. */}
       <group position={[-1.2, 0.73, 2.3]}>{/* centers the source OBJ at the simulation origin */}
         <primitive object={model} />
       </group>

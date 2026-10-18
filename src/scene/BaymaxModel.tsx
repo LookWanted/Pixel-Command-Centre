@@ -70,22 +70,22 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
     if (baymaxState.state === 'lunge_prep') {
       // Windup lowers Baymax before the strike.
-      scaleTargetRef.current.set(1.14, 0.84, 1.14);
+      scaleTargetRef.current.set(1, 0.92, 1);
       if (bodyRef.current) bodyRef.current.rotation.x = -0.22;
       if (leftArmRef.current) leftArmRef.current.rotation.x = 0.4;
       if (rightArmRef.current) rightArmRef.current.rotation.x = 0.4;
     } else if (baymaxState.state === 'lunging') {
       // The attack stays low and wide; roaming Baymax is visibly taller.
-      scaleTargetRef.current.set(1.24, 0.72, 1.24);
+      scaleTargetRef.current.set(1, 0.82, 1);
       if (bodyRef.current) bodyRef.current.rotation.x = 0.38;
       if (leftArmRef.current) leftArmRef.current.rotation.x = -0.5;
       if (rightArmRef.current) rightArmRef.current.rotation.x = -0.5;
     } else {
       // Gentle rhythmic vinyl breathing
       const breath = Math.sin(time * 2.2) * 0.025;
-      // Roaming reads as an upright, buoyant healthcare silhouette. The much
-      // lower lunge scales above create a clear, readable pose change.
-      scaleTargetRef.current.set(1 + breath * 0.35, 1.18 + breath, 1 + breath * 0.35);
+      // Keep the supplied Baymax model upright and naturally proportioned
+      // while roaming. Only the attack pose compresses vertically.
+      scaleTargetRef.current.set(1, 1 + breath, 1);
       if (bodyRef.current) {
         bodyRef.current.rotation.x = THREE.MathUtils.lerp(bodyRef.current.rotation.x, 0, delta * 8);
       }
