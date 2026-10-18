@@ -155,7 +155,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
       </Suspense>
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
-        position={[0, 4.4, 0]}
+        position={[0, 5.45, 0]}
         center
         distanceFactor={18}
         zIndexRange={[100, 0]}
