@@ -166,8 +166,15 @@ export function step(world: SimWorld, dt: number): SimWorld {
   // structure, Baymax gets a brief recovery window instead of passive damage.
   const swarmPhase = world.timeElapsed % 18;
   const structureWindow = swarmPhase >= 3 && swarmPhase < 14;
-  const pressure = alivePixels.length > 0 ? (structureWindow ? 0.12 : 3.3) : 0;
-  world.baymax.health = Math.max(0, world.baymax.health - pressure * dt);
+  if (alivePixels.length > 0) {
+    if (structureWindow) {
+      // While the swarm is assembled away from Baymax, he gets meaningful
+      // recovery time rather than losing health continuously forever.
+      world.baymax.health = Math.min(100, world.baymax.health + 2.15 * dt);
+    } else {
+      world.baymax.health = Math.max(0, world.baymax.health - 3.0 * dt);
+    }
+  }
 
   if (world.baymax.health <= 0) {
     world.status = 'failed';

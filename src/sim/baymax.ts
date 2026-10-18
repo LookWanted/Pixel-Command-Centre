@@ -126,9 +126,16 @@ export function updateBaymax(
           const dx = tgt.pos.x - baymax.pos.x;
           const dy = tgt.pos.y - baymax.pos.y;
           const dist = Math.hypot(dx, dy);
-          const reach = Math.min(dist, config.lungeReach);
-          const dirX = dist > 0.001 ? dx / dist : Math.cos(baymax.angle);
-          const dirY = dist > 0.001 ? dy / dist : Math.sin(baymax.angle);
+          // Aim slightly ahead of the fast airborne commander. This keeps an
+          // autonomous Baymax dangerous without guaranteeing a hit.
+          const predictedX = tgt.pos.x + tgt.vel.x * 0.32;
+          const predictedY = tgt.pos.y + tgt.vel.y * 0.32;
+          const predictedDx = predictedX - baymax.pos.x;
+          const predictedDy = predictedY - baymax.pos.y;
+          const predictedDist = Math.hypot(predictedDx, predictedDy);
+          const reach = Math.min(predictedDist, config.lungeReach);
+          const dirX = predictedDist > 0.001 ? predictedDx / predictedDist : (dist > 0.001 ? dx / dist : Math.cos(baymax.angle));
+          const dirY = predictedDist > 0.001 ? predictedDy / predictedDist : (dist > 0.001 ? dy / dist : Math.sin(baymax.angle));
           targetX = baymax.pos.x + dirX * reach;
           targetY = baymax.pos.y + dirY * reach;
           baymax.angle = Math.atan2(dirY, dirX);
@@ -226,7 +233,7 @@ export function updateBaymax(
     // Resolve a dash against its single locked Pixel commander. The old area
     // hitbox belonged to the ground-swarm version and could erase a whole
     // airborne command fleet at once.
-    const killRadius = 26;
+    const killRadius = 42;
     const lockedTarget = baymax.targetPixelId === null ? undefined : pixels.find((p) => p.id === baymax.targetPixelId);
     if (lockedTarget?.alive) {
       const p = lockedTarget;

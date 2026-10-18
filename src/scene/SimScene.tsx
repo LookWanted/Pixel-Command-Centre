@@ -284,6 +284,7 @@ export const SimScene: React.FC = () => {
 
   const world = worldRef.current;
   const isPacified = world.status === 'success';
+  const isDefeated = world.status === 'failed' && world.baymax.health <= 0;
 
   return (
     <>
@@ -298,13 +299,14 @@ export const SimScene: React.FC = () => {
       <BaymaxModel
         baymaxState={world.baymax}
         isPacified={isPacified}
+        isDefeated={isDefeated}
         extractionProgress={world.extractionProgress}
       />
-      <ScanCone
+      {world.status === 'running' && <ScanCone
         baymaxState={world.baymax}
         pixels={world.pixels}
         lungeReach={world.config.lungeReach}
-      />
+      />}
       <PixelSwarm
         pixels={world.pixels}
         hiveKnowledge={world.hiveKnowledge}
@@ -312,6 +314,7 @@ export const SimScene: React.FC = () => {
       <NanobotSwarm
         commanders={world.pixels}
         baymax={world.baymax}
+        isCoveringBaymax={isDefeated}
       />
     </>
   );

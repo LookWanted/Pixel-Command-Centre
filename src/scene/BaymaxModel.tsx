@@ -8,12 +8,14 @@ import { BaymaxObjAsset, BaymaxWalkMotion } from './BaymaxObjAsset';
 interface BaymaxModelProps {
   baymaxState: BaymaxState;
   isPacified: boolean;
+  isDefeated: boolean;
   extractionProgress: number;
 }
 
 export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   baymaxState,
   isPacified,
+  isDefeated,
   extractionProgress
 }) => {
   const groupRef = useRef<THREE.Group>(null);
@@ -26,6 +28,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   const scaleTargetRef = useRef(new THREE.Vector3(1, 1, 1));
   const walkMotionRef = useRef<BaymaxWalkMotion>({ stride: 0, amount: 0 });
   const flyOutProgressRef = useRef(0);
+  const defeatProgressRef = useRef(0);
   const [cadReady, setCadReady] = useState(false);
   const handleCadReady = useCallback(() => setCadReady(true), []);
 
@@ -64,7 +67,10 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     const poseBlend = 1 - Math.exp(-10 * delta);
     if (isPacified) flyOutProgressRef.current = Math.min(1, flyOutProgressRef.current + delta * 0.16);
     else flyOutProgressRef.current = 0;
+    if (isDefeated) defeatProgressRef.current = Math.min(1, defeatProgressRef.current + delta * 0.8);
+    else defeatProgressRef.current = 0;
     const launch = THREE.MathUtils.smootherstep(Math.max(0, (flyOutProgressRef.current - 0.16) / 0.84), 0, 1);
+    const collapse = THREE.MathUtils.smootherstep(defeatProgressRef.current, 0, 1);
     groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, movementBlend);
     groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, targetZ, movementBlend);
 
@@ -86,12 +92,15 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     const walkLean = Math.cos(stride) * 0.028 * walkAmount;
     groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob + launch * 18, poseBlend);
     groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway, poseBlend);
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean, poseBlend);
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean + collapse * 1.34, poseBlend);
     walkMotionRef.current.stride = stride;
     walkMotionRef.current.amount = walkAmount;
 
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
-    if (baymaxState.state === 'lunge_prep') {
+    if (isDefeated) {
+      scaleTargetRef.current.set(1.08, 0.58, 1.18);
+      if (bodyRef.current) bodyRef.current.rotation.x = 0.32;
+    } else if (baymaxState.state === 'lunge_prep') {
       // Windup lowers Baymax before the strike.
       scaleTargetRef.current.set(1, 0.92, 1);
       if (bodyRef.current) bodyRef.current.rotation.x = -0.22;
@@ -117,7 +126,12 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
 
     // 2. Arms Dynamics: Pinning struggle or iconic friendly wave
     if (leftArmRef.current && rightArmRef.current) {
-      if (isPacified) {
+      if (isDefeated) {
+        leftArmRef.current.rotation.z = 0.9;
+        rightArmRef.current.rotation.z = -0.9;
+        leftArmRef.current.rotation.x = 0.45;
+        rightArmRef.current.rotation.x = 0.45;
+      } else if (isPacified) {
         // Friendly Baymax Wave
         rightArmRef.current.rotation.z = -1.35;
         rightArmRef.current.rotation.x = Math.sin(time * 4) * 0.35;
@@ -139,7 +153,10 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
 
     // 3. Head Tracking & Incline
     if (headRef.current) {
-      if (isPacified) {
+      if (isDefeated) {
+        headRef.current.rotation.z = 0.42;
+        headRef.current.rotation.x = 0.32;
+      } else if (isPacified) {
         headRef.current.rotation.z = 0.12; // Inquisitive tilt
         headRef.current.rotation.y = Math.sin(time * 0.8) * 0.15;
       } else if (baymaxState.targetPixelId !== null) {
@@ -150,7 +167,9 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
 
     // 4. Red Combat Chip Pulse / Ejection
     if (chipRef.current) {
-      if (isPacified) {
+      if (isDefeated) {
+        if (chipLightRef.current) chipLightRef.current.intensity = 0;
+      } else if (isPacified) {
         chipRef.current.position.y = 2.4 + Math.sin(time * 2) * 0.15;
         chipRef.current.rotation.y += delta * 1.8;
       } else {
@@ -163,8 +182,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   });
 
   // Eyes styling
-  const eyeColor = isPacified ? '#38D9F9' : '#E10600';
-  const eyeEmissive = isPacified ? '#38D9F9' : '#FF1020';
+  const eyeColor = isDefeated ? '#15191b' : isPacified ? '#38D9F9' : '#E10600';
+  const eyeEmissive = isDefeated ? '#000000' : isPacified ? '#38D9F9' : '#FF1020';
 
   // Dynamic Tag States
   const isLunge = baymaxState.state === 'lunge_prep' || baymaxState.state === 'lunging';
@@ -190,7 +209,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
         </group>
       )}
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
-      <Html
+      {!isDefeated && <Html
         position={[0, 6.35, 0]}
         center
         distanceFactor={18}
@@ -231,7 +250,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
             </div>
           )}
         </div>
-      </Html>
+      </Html>}
 
       {/* Main Baymax Mesh Body */}
       <group ref={bodyRef} position={[0, 0, 0]} visible={!cadReady}>

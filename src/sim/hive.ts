@@ -75,5 +75,5 @@ export function processLungeObservation(
  */
 export function getPixelDodgeChance(pixel: PixelState, sharedKnowledge: number, hiveMode: boolean): number {
   const knowledge = hiveMode ? sharedKnowledge : pixel.knowledge;
-  return Math.min(0.85, knowledge * 0.85);
+  return Math.min(0.74, knowledge * 0.78);
 }

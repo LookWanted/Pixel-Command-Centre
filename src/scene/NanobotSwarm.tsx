@@ -10,7 +10,7 @@ type CadMesh = {
 type CadResult = { success: boolean; meshes: CadMesh[] };
 
 let importerPromise: Promise<void> | null = null;
-const BOT_COUNT = 160;
+const BOT_COUNT = 240;
 
 function loadCadImporter() {
   const cadWindow = window as unknown as { occtimportjs?: () => Promise<{ ReadStepFile: (data: Uint8Array, params: unknown) => CadResult }> };
@@ -31,12 +31,13 @@ function formationMatrix(
   index: number,
   commanders: PixelState[],
   baymax: BaymaxState,
-  time: number
+  time: number,
+  isCoveringBaymax: boolean
 ) {
   // One Pixel commander now directs the full ground swarm. Modulo preserves
   // sane ownership if a future scenario adds more commanders.
   const commander = commanders[index % commanders.length];
-  if (!commander?.alive) {
+  if (!commander?.alive && !isCoveringBaymax) {
     dummy.position.set(0, -100, 0);
     dummy.scale.setScalar(0);
     dummy.updateMatrix();
@@ -45,6 +46,23 @@ function formationMatrix(
 
   const bx = baymax.pos.x * 0.1;
   const bz = baymax.pos.y * 0.1;
+  if (isCoveringBaymax) {
+    // Defeat state: every small nanobot settles into a dense, layered shell
+    // over Baymax rather than continuing its normal attack choreography.
+    const layer = Math.floor(index / 48);
+    const ringIndex = index % 48;
+    const angle = (ringIndex / 48) * Math.PI * 2 + layer * 0.42;
+    const radius = 0.65 + (ringIndex % 6) * 0.13 + layer * 0.18;
+    dummy.position.set(
+      bx + Math.cos(angle) * radius,
+      0.06 + layer * 0.52,
+      bz + Math.sin(angle) * radius
+    );
+    dummy.rotation.set(0.22 * Math.sin(time * 2 + index), -angle, 0.12 * Math.cos(time * 1.7 + index));
+    dummy.scale.setScalar(0.009);
+    dummy.updateMatrix();
+    return;
+  }
   // A longer rhythm gives each structure time to read as a physical object:
   // short ground scramble, deliberate build, then a sustained hold.
   const cycle = Math.floor(time / 18);
@@ -111,11 +129,11 @@ function formationMatrix(
     THREE.MathUtils.lerp(attackZ, fz, formationStrength)
   );
   dummy.rotation.set(0, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.16 * (1 - formationStrength));
-  dummy.scale.setScalar(0.011);
+  dummy.scale.setScalar(0.009);
   dummy.updateMatrix();
 }
 
-const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax: BaymaxState }> = ({ mesh, commanders, baymax }) => {
+const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax: BaymaxState; isCoveringBaymax: boolean }> = ({ mesh, commanders, baymax, isCoveringBaymax }) => {
   const ref = useRef<THREE.InstancedMesh>(null);
   const dummy = useRef(new THREE.Object3D());
   const geometryRef = useRef<THREE.BufferGeometry | null>(null);
@@ -137,7 +155,7 @@ const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax
     if (!ref.current) return;
     const time = state.clock.getElapsedTime();
     for (let i = 0; i < BOT_COUNT; i++) {
-      formationMatrix(dummy.current, i, commanders, baymax, time);
+      formationMatrix(dummy.current, i, commanders, baymax, time, isCoveringBaymax);
       ref.current.setMatrixAt(i, dummy.current.matrix);
     }
     ref.current.instanceMatrix.needsUpdate = true;
@@ -147,7 +165,7 @@ const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax
 };
 
 /** A dense ground field of supplied Big Hero nanobots, directed by the airborne Pixel commander. */
-export const NanobotSwarm: React.FC<{ commanders: PixelState[]; baymax: BaymaxState }> = ({ commanders, baymax }) => {
+export const NanobotSwarm: React.FC<{ commanders: PixelState[]; baymax: BaymaxState; isCoveringBaymax: boolean }> = ({ commanders, baymax, isCoveringBaymax }) => {
   const [meshes, setMeshes] = useState<CadMesh[]>([]);
 
   useEffect(() => {
@@ -166,5 +184,5 @@ export const NanobotSwarm: React.FC<{ commanders: PixelState[]; baymax: BaymaxSt
     return () => { active = false; };
   }, []);
 
-  return <group>{meshes.map((mesh, index) => <NanobotCadPart key={index} mesh={mesh} commanders={commanders} baymax={baymax} />)}</group>;
+  return <group>{meshes.map((mesh, index) => <NanobotCadPart key={index} mesh={mesh} commanders={commanders} baymax={baymax} isCoveringBaymax={isCoveringBaymax} />)}</group>;
 };
