@@ -3,12 +3,14 @@ import { createRNG } from './rng';
 
 export function createPixels(config: SimConfig, rng: ReturnType<typeof createRNG>): PixelState[] {
   const pixels: PixelState[] = [];
-  const spawnRadius = config.arenaRadius * 0.65;
+  // Commanders begin across the arena, giving Baymax distinct targets instead
+  // of a tight cluster that all reacts as one unit.
+  const spawnRadius = config.arenaRadius * 0.82;
 
   for (let i = 0; i < config.pixelCount; i++) {
     // Distribute around Baymax in an arc
     const angle = (i / config.pixelCount) * Math.PI * 2 + rng.range(-0.15, 0.15);
-    const dist = rng.range(spawnRadius * 0.55, spawnRadius);
+    const dist = rng.range(spawnRadius * 0.68, spawnRadius);
 
     pixels.push({
       id: i + 1,
@@ -80,7 +82,7 @@ export function updatePixels(
       // Orbit dynamically in and out of Baymax's scan cone to draw his attention!
       const orbitSpeed = 1.2 + (p.id % 3) * 0.4;
       const orbitAngle = (p.id * 1.5) + (Date.now() * 0.001 * orbitSpeed * (p.id % 2 === 0 ? 1 : -1));
-      const orbitDist = 130 + Math.sin(orbitAngle * 3 + p.id) * 55;
+      const orbitDist = 175 + Math.sin(orbitAngle * 3 + p.id) * 92;
       target = {
         x: baymaxPos.x + Math.cos(orbitAngle) * orbitDist,
         y: baymaxPos.y + Math.sin(orbitAngle) * orbitDist

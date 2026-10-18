@@ -47,11 +47,15 @@ function formationMatrix(
   const cycle = Math.floor(time / 10);
   const cycleTime = time % 10;
   // Each 10-second window picks a deterministic-but-varied structure. The
-  // opening three seconds are the build; the rest is chaotic attack motion.
+  // swarm visibly builds, holds, and then breaks back into attack motion.
   const structure = Math.floor(Math.abs(Math.sin((cycle + 1) * 91.73)) * 3) % 3;
-  const buildStrength = cycleTime < 3 ? THREE.MathUtils.smootherstep(cycleTime / 3, 0, 1) : 0;
-  const releaseStrength = cycleTime > 8.5 ? 1 - THREE.MathUtils.smootherstep((cycleTime - 8.5) / 1.5, 0, 1) : 1;
-  const formationStrength = buildStrength * releaseStrength;
+  const formationStrength = cycleTime < 1.4
+    ? THREE.MathUtils.smootherstep(cycleTime / 1.4, 0, 1)
+    : cycleTime < 6.8
+      ? 1
+      : cycleTime < 8.3
+        ? 1 - THREE.MathUtils.smootherstep((cycleTime - 6.8) / 1.5, 0, 1)
+        : 0;
 
   // Aggressive individual flight paths: every nanobot dives, swerves and
   // circles Baymax independently rather than moving as a permanent formation.
@@ -70,13 +74,13 @@ function formationMatrix(
     const gx = (index % 5) - 2;
     const gy = (Math.floor(index / 5) % 4) - 1.5;
     const gz = Math.floor(index / 20) - 2;
-    fx += gx * 0.62; fy += gy * 0.62; fz += gz * 0.62;
+    fx += gx * 0.88; fy += gy * 0.88; fz += gz * 0.88;
   } else if (structure === 1) {
     // Sphere: evenly distributed Fibonacci shell.
     const ratio = (index + 0.5) / BOT_COUNT;
     const polar = Math.acos(1 - ratio * 2);
     const azimuth = Math.PI * (3 - Math.sqrt(5)) * index;
-    const radius = 2.45;
+    const radius = 3.45;
     fx += Math.cos(azimuth) * Math.sin(polar) * radius;
     fy += Math.cos(polar) * radius;
     fz += Math.sin(azimuth) * Math.sin(polar) * radius;
@@ -88,10 +92,10 @@ function formationMatrix(
     const sideT = (point % 4) / 4;
     const a = side * Math.PI / 3;
     const b = (side + 1) * Math.PI / 3;
-    const radius = 2.35;
+    const radius = 3.3;
     fx += (Math.cos(a) * (1 - sideT) + Math.cos(b) * sideT) * radius;
     fz += (Math.sin(a) * (1 - sideT) + Math.sin(b) * sideT) * radius;
-    fy += (ring - 2) * 0.58;
+    fy += (ring - 2) * 0.78;
   }
 
   dummy.position.set(
@@ -100,7 +104,7 @@ function formationMatrix(
     THREE.MathUtils.lerp(attackZ, fz, formationStrength)
   );
   dummy.rotation.set(time * 1.7 + seed, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.35 * (1 - formationStrength));
-  dummy.scale.setScalar(0.012);
+  dummy.scale.setScalar(0.016);
   dummy.updateMatrix();
 }
 
