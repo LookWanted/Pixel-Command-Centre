@@ -184,8 +184,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   });
 
   // Eyes styling
-  const eyeColor = isDefeated ? '#15191b' : isPacified ? '#38D9F9' : '#E10600';
-  const eyeEmissive = isDefeated ? '#000000' : isPacified ? '#38D9F9' : '#FF1020';
+  const eyeColor = '#ff2334';
+  const eyeEmissive = '#ff0018';
 
   // Dynamic Tag States
   const isLunge = baymaxState.state === 'lunge_prep' || baymaxState.state === 'lunging';
@@ -197,6 +197,18 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
       <Suspense fallback={null}>
         <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} walkMotionRef={walkMotionRef} />
       </Suspense>
+      {/* The supplied OBJ has no individually addressable eye meshes. A small
+          emissive face overlay keeps Baymax's iconic expression clearly red. */}
+      <group position={[0, 3.17, 0.73]}>
+        <mesh>
+          <boxGeometry args={[0.52, 0.035, 0.035]} />
+          <meshBasicMaterial color={eyeColor} toneMapped={false} />
+        </mesh>
+        {[-0.26, 0.26].map((x) => <group key={x} position={[x, 0, 0]}>
+          <mesh><sphereGeometry args={[0.085, 16, 16]} /><meshBasicMaterial color={eyeEmissive} toneMapped={false} /></mesh>
+          <pointLight color={eyeEmissive} intensity={0.7} distance={2.4} />
+        </group>)}
+      </group>
       {isPacified && (
         <group position={[0, 0.2, 0]}>
           {[-0.46, 0.46].map((x) => (
