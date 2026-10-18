@@ -90,9 +90,8 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
     video.play().catch(() => undefined);
   }, []);
 
-  // The soundtrack is intentionally scoped to the landing experience. Audible
-  // media needs a user gesture in most browsers; keeping the start state in a
-  // ref also avoids duplicate play calls from React's development StrictMode.
+  // Start as soon as the landing experience mounts. If a browser blocks audible
+  // autoplay, the same path is retried on the visitor's first interaction.
   useEffect(() => {
     const soundtrack = soundtrackRef.current;
     if (!soundtrack) return;
@@ -102,9 +101,12 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
 
     let disposed = false;
     const startSoundtrack = () => {
-      soundtrackStartedRef.current = true;
       if (disposed || !soundtrack.paused) return;
-      soundtrack.play().catch(() => undefined);
+      soundtrack.play()
+        .then(() => {
+          soundtrackStartedRef.current = true;
+        })
+        .catch(() => undefined);
     };
     const handleVisibility = () => {
       if (document.visibilityState === 'hidden') {
@@ -117,6 +119,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
     window.addEventListener('pointerdown', startSoundtrack, { once: true, passive: true });
     window.addEventListener('keydown', startSoundtrack, { once: true });
     document.addEventListener('visibilitychange', handleVisibility);
+    startSoundtrack();
     return () => {
       disposed = true;
       window.removeEventListener('pointerdown', startSoundtrack);
