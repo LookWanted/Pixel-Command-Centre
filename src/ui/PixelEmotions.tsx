@@ -3,13 +3,13 @@ import { useStore } from '../store/useStore';
 
 type Mood = { label: string; pixels: number[] };
 
-// Five tiny LED-matrix expressions, inspired by the Pixel bot display.
+// The five supplied Pixel LED expressions, recreated as a single large matrix.
 const moods: Mood[] = [
-  { label: 'Overrun', pixels: [0, 4, 6, 8, 12, 16, 18, 20, 24, 26, 28, 30, 34] },
-  { label: 'Ambush', pixels: [0, 5, 10, 16, 22, 28, 34, 4, 9, 14, 20, 26, 32] },
-  { label: 'Pursuit', pixels: [2, 8, 14, 20, 26, 32, 30, 31, 33, 34] },
-  { label: 'Tracking', pixels: [1, 3, 7, 9, 14, 15, 16, 17, 20, 22, 26, 28, 31, 33] },
-  { label: 'Calm', pixels: [7, 8, 11, 12, 22, 23, 26, 27] }
+  { label: 'Overrun', pixels: [0, 6, 8, 12, 14, 16, 18, 20, 24, 26, 30, 32, 34, 36, 40, 42, 48] },
+  { label: 'Ambush', pixels: [1, 2, 3, 4, 5, 7, 13, 17, 19, 21, 27, 28, 29, 30, 31, 32, 33] },
+  { label: 'Pursuit', pixels: [3, 10, 17, 24, 31, 38, 45, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41] },
+  { label: 'Tracking', pixels: [1, 5, 7, 13, 15, 19, 21, 27, 28, 29, 30, 31, 32, 33, 35, 41, 43, 47] },
+  { label: 'Calm', pixels: [8, 9, 11, 12, 15, 16, 18, 19, 29, 30, 32, 33, 36, 37, 39, 40] }
 ];
 
 const moodIndex = (status: string, baymaxState: string, health: number) => {
@@ -30,12 +30,8 @@ export const PixelEmotions: React.FC = () => {
         <p className="side-eyebrow">Pixel mood</p>
         <span>{moods[active].label}</span>
       </div>
-      <div className="pixel-emotions__row">
-        {moods.map((mood, index) => (
-          <div key={mood.label} className={`pixel-expression ${index === active ? 'is-active' : ''}`} title={mood.label}>
-            {Array.from({ length: 35 }, (_, dot) => <i key={dot} className={mood.pixels.includes(dot) ? 'is-lit' : ''} />)}
-          </div>
-        ))}
+      <div className="pixel-expression pixel-expression--large" aria-label={`Pixel emotion: ${moods[active].label}`}>
+        {Array.from({ length: 49 }, (_, dot) => <i key={dot} className={moods[active].pixels.includes(dot) ? 'is-lit' : ''} />)}
       </div>
     </section>
   );
