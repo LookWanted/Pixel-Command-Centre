@@ -222,10 +222,13 @@ export function updateBaymax(
     baymax.pos.x = baymax.lungeStartPos.x + (baymax.lungeTargetPos.x - baymax.lungeStartPos.x) * baymax.lungeProgress;
     baymax.pos.y = baymax.lungeStartPos.y + (baymax.lungeTargetPos.y - baymax.lungeStartPos.y) * baymax.lungeProgress;
 
-    // Hitbox check along dash: any pixel touched mid-dash is destroyed unless it dodged
+    // Resolve a dash against its single locked Pixel commander. The old area
+    // hitbox belonged to the ground-swarm version and could erase a whole
+    // airborne command fleet at once.
     const killRadius = 26;
-    for (const p of pixels) {
-      if (!p.alive) continue;
+    const lockedTarget = baymax.targetPixelId === null ? undefined : pixels.find((p) => p.id === baymax.targetPixelId);
+    if (lockedTarget?.alive) {
+      const p = lockedTarget;
       const dist = Math.hypot(p.pos.x - baymax.pos.x, p.pos.y - baymax.pos.y);
       if (dist <= killRadius) {
         // Calculate dodge chance: dodge chance = knowledge * 0.85

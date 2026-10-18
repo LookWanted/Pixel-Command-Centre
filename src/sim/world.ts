@@ -192,14 +192,14 @@ export function step(world: SimWorld, dt: number): SimWorld {
         world.events.push(event);
         world.recentEvents.push(event);
       }
-    } else if (alivePixels.length < 3) {
+    } else if (alivePixels.length === 0) {
       world.status = 'failed';
-      world.statusReason = 'Insufficient swarm units (<3 alive) to execute tripartite extraction.';
+      world.statusReason = 'All Pixel commanders were neutralized.';
       const event = {
         id: `failed_${world.timeElapsed}`,
         time: world.timeElapsed,
         kind: 'mission_failed' as const,
-        message: `[MISSION FAILED] Critical swarm casualties. Extraction triage impossible.`,
+        message: `[MISSION FAILED] All Pixel commanders were neutralized.`,
         data: {}
       };
       world.events.push(event);
@@ -275,7 +275,7 @@ export function runEpisode(
     episodeNumber: episodeNum,
     hiveMode: config.hiveMode,
     success: sim.status === 'success',
-    timeElapsed: Math.min(90, Math.round(sim.timeElapsed * 10) / 10),
+    timeElapsed: Math.min(180, Math.round(sim.timeElapsed * 10) / 10),
     survivors: aliveCount,
     extractionProgress: Math.round(sim.extractionProgress * 100),
     hiveKnowledge: Math.round(sim.hiveKnowledge * 100),

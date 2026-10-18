@@ -221,7 +221,7 @@ export const SimScene: React.FC = () => {
             episodeNumber: useStore.getState().currentEpisode,
             hiveMode: world.config.hiveMode,
             success: world.status === 'success',
-            timeElapsed: Math.min(90, Math.round(world.timeElapsed * 10) / 10),
+            timeElapsed: Math.min(180, Math.round(world.timeElapsed * 10) / 10),
             survivors: aliveCount,
             extractionProgress: Math.round(world.extractionProgress * 100),
             hiveKnowledge: Math.round(world.hiveKnowledge * 100),
