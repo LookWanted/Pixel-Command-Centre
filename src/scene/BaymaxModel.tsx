@@ -1,8 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { BaymaxState, PixelState } from '../sim/types';
+import { BaymaxCadAsset } from './BaymaxCadAsset';
 
 interface BaymaxModelProps {
   baymaxState: BaymaxState;
@@ -22,6 +23,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   const rightArmRef = useRef<THREE.Group>(null);
   const chipRef = useRef<THREE.Mesh>(null);
   const chipLightRef = useRef<THREE.PointLight>(null);
+  const [cadReady, setCadReady] = useState(false);
+  const handleCadReady = useCallback(() => setCadReady(true), []);
 
   const targetX = baymaxState.pos.x * 0.1;
   const targetZ = baymaxState.pos.y * 0.1;
@@ -141,6 +144,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
+      <BaymaxCadAsset pacified={isPacified} onReady={handleCadReady} />
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
         position={[0, 4.4, 0]}
@@ -186,13 +190,12 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
       </Html>
 
       {/* Main Baymax Mesh Body */}
-      <group ref={bodyRef} position={[0, 0, 0]}>
-        {/* Inflated healthcare silhouette: intentionally soft, simple, and unmistakably Baymax. */}
-        <mesh position={[0, 1.58, 0]} scale={[1.18, 1.42, 1]} castShadow material={bodyMaterial}>
-          <sphereGeometry args={[1.22, 40, 32]} />
+      <group ref={bodyRef} position={[0, 0, 0]} visible={!cadReady}>
+        <mesh position={[0, 1.45, 0]} castShadow material={bodyMaterial}>
+          <sphereGeometry args={[1.35, 32, 32]} />
         </mesh>
-        <mesh position={[0, 2.4, 0.02]} scale={[1.05, 0.92, 0.93]} castShadow material={bodyMaterial}>
-          <sphereGeometry args={[1.05, 40, 30]} />
+        <mesh position={[0, 2.15, 0]} castShadow material={bodyMaterial}>
+          <sphereGeometry args={[1.18, 32, 32]} />
         </mesh>
 
         {/* 2. Left Arm Combat Armor Plating (Big Hero 6 Red) */}
@@ -208,7 +211,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
         )}
 
         {/* 3. Left Chest Receptacle & Red Combat Chip Slot */}
-        <group position={[-0.38, 2.42, 1.06]}>
+        <group position={[-0.42, 2.38, 1.05]}>
           {/* Access Port Rim */}
           <mesh rotation={[0, 0, 0]}>
             <torusGeometry args={[0.26, 0.04, 16, 28]} />
@@ -244,14 +247,14 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
         </group>
 
         {/* 4. Iconic Head with Dot Eyes & Connecting Line */}
-        <group ref={headRef} position={[0, 3.72, 0.02]}>
-          <mesh castShadow scale={[1.38, 0.79, 0.86]} material={bodyMaterial}>
-            <sphereGeometry args={[0.72, 40, 28]} />
+        <group ref={headRef} position={[0, 3.15, 0]}>
+          <mesh castShadow scale={[1.0, 0.88, 0.95]} material={bodyMaterial}>
+            <sphereGeometry args={[0.72, 32, 28]} />
           </mesh>
 
           {/* Connecting Black Eye Line */}
-          <mesh position={[0, 0.01, 0.62]}>
-            <boxGeometry args={[0.62, 0.025, 0.025]} />
+          <mesh position={[0, 0.02, 0.68]}>
+            <boxGeometry args={[0.48, 0.028, 0.03]} />
             <meshStandardMaterial
               color={eyeColor}
               emissive={eyeEmissive}
@@ -260,8 +263,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
           </mesh>
 
           {/* Left Eye */}
-          <mesh position={[-0.31, 0.01, 0.62]}>
-            <sphereGeometry args={[0.075, 20, 20]} />
+          <mesh position={[-0.24, 0.02, 0.68]}>
+            <sphereGeometry args={[0.07, 16, 16]} />
             <meshStandardMaterial
               color={eyeColor}
               emissive={eyeEmissive}
@@ -270,8 +273,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
           </mesh>
 
           {/* Right Eye */}
-          <mesh position={[0.31, 0.01, 0.62]}>
-            <sphereGeometry args={[0.075, 20, 20]} />
+          <mesh position={[0.24, 0.02, 0.68]}>
+            <sphereGeometry args={[0.07, 16, 16]} />
             <meshStandardMaterial
               color={eyeColor}
               emissive={eyeEmissive}
@@ -281,25 +284,25 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
         </group>
 
         {/* 5. Left Arm */}
-        <group ref={leftArmRef} position={[-1.3, 2.18, 0]}>
-          <mesh position={[0, -0.7, 0]} rotation={[0, 0, 0.16]} castShadow material={bodyMaterial}>
-            <capsuleGeometry args={[0.43, 1.25, 20, 20]} />
+        <group ref={leftArmRef} position={[-1.25, 2.1, 0]}>
+          <mesh position={[0, -0.65, 0]} rotation={[0, 0, 0.18]} castShadow material={bodyMaterial}>
+            <capsuleGeometry args={[0.34, 0.95, 16, 16]} />
           </mesh>
         </group>
 
         {/* 6. Right Arm */}
-        <group ref={rightArmRef} position={[1.3, 2.18, 0]}>
-          <mesh position={[0, -0.7, 0]} rotation={[0, 0, -0.16]} castShadow material={bodyMaterial}>
-            <capsuleGeometry args={[0.43, 1.25, 20, 20]} />
+        <group ref={rightArmRef} position={[1.25, 2.1, 0]}>
+          <mesh position={[0, -0.65, 0]} rotation={[0, 0, -0.18]} castShadow material={bodyMaterial}>
+            <capsuleGeometry args={[0.34, 0.95, 16, 16]} />
           </mesh>
         </group>
 
         {/* 7. Rounded Stubby Legs & Pill Feet */}
-        <mesh position={[-0.48, 0.6, 0]} castShadow material={bodyMaterial}>
-          <capsuleGeometry args={[0.42, 0.7, 20, 20]} />
+        <mesh position={[-0.52, 0.72, 0]} castShadow material={bodyMaterial}>
+          <capsuleGeometry args={[0.38, 0.85, 16, 16]} />
         </mesh>
-        <mesh position={[0.48, 0.6, 0]} castShadow material={bodyMaterial}>
-          <capsuleGeometry args={[0.42, 0.7, 20, 20]} />
+        <mesh position={[0.52, 0.72, 0]} castShadow material={bodyMaterial}>
+          <capsuleGeometry args={[0.38, 0.85, 16, 16]} />
         </mesh>
       </group>
     </group>
