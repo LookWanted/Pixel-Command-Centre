@@ -10,6 +10,7 @@ import { NanobotSwarm } from './NanobotSwarm';
 import { ScanCone } from './ScanCone';
 import { CameraRig } from './CameraRig';
 import { sound } from '../utils/audio';
+import { DECISION_PROMPTS } from '../sim/decisionPrompts';
 
 export const SimScene: React.FC = () => {
   const {
@@ -30,6 +31,7 @@ export const SimScene: React.FC = () => {
     waypoint,
     manualKillPoint,
     setManualKillPoint,
+    setDecisionPrompt,
     selectedPixelId
   } = useStore();
 
@@ -37,6 +39,8 @@ export const SimScene: React.FC = () => {
   const accumulatorRef = useRef<number>(0);
   const snapshotTimerRef = useRef<number>(0);
   const prevStatusRef = useRef<string>('running');
+  const askedPromptCountRef = useRef(0);
+  const askedPromptIdsRef = useRef(new Set<string>());
 
   // Handle live config updates or reset requests
   useEffect(() => {
@@ -44,6 +48,8 @@ export const SimScene: React.FC = () => {
       worldRef.current = resetWorld(worldRef.current, config, true);
       clearResetRequest();
       prevStatusRef.current = 'running';
+      askedPromptCountRef.current = 0;
+      askedPromptIdsRef.current.clear();
     }
   }, [resetRequested, config, clearResetRequest]);
 
@@ -147,6 +153,20 @@ export const SimScene: React.FC = () => {
 
       while (accumulatorRef.current >= fixedDt) {
         step(world, fixedDt, manualPilotActive);
+
+        // Automated mode gets up to three distinct, compact operator checks.
+        // They do not pause the simulation or alter its combat logic.
+        const promptTimes = [6, 15, 27];
+        if (!manualPilotActive && !useStore.getState().decisionPrompt && askedPromptCountRef.current < promptTimes.length && world.timeElapsed >= promptTimes[askedPromptCountRef.current]) {
+          const start = (world.seed + askedPromptCountRef.current * 7) % DECISION_PROMPTS.length;
+          const prompt = Array.from({ length: DECISION_PROMPTS.length }, (_, offset) => DECISION_PROMPTS[(start + offset) % DECISION_PROMPTS.length])
+            .find((candidate) => !askedPromptIdsRef.current.has(candidate.id));
+          if (prompt) {
+            askedPromptIdsRef.current.add(prompt.id);
+            askedPromptCountRef.current += 1;
+            setDecisionPrompt(prompt);
+          }
+        }
 
         // Manual instructor override: WASD drives Baymax directly.
         if (manualPilotActive) {

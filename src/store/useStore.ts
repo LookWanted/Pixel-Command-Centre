@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { SimConfig, SimEvent, EpisodeResult } from '../sim/types';
 import { DEFAULT_CONFIG } from '../sim/world';
 import { sound } from '../utils/audio';
+import type { DecisionPrompt } from '../sim/decisionPrompts';
 
 export interface UIWorldSnapshot {
   timeElapsed: number;
@@ -103,6 +104,10 @@ interface AppState {
   shieldActive: boolean;
   setShieldActive: (active: boolean) => void;
 
+  // Brief automated-mode operator checks
+  decisionPrompt: DecisionPrompt | null;
+  setDecisionPrompt: (prompt: DecisionPrompt | null) => void;
+
   // Cinematic Story Briefing & Theater
   cinematicBriefingOpen: boolean;
   setCinematicBriefingOpen: (open: boolean) => void;
@@ -129,7 +134,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   resetRequested: false,
   requestReset: () => set({ resetRequested: true, hiveLearningHistory: [] }),
-  clearResetRequest: () => set({ resetRequested: false }),
+  clearResetRequest: () => set({ resetRequested: false, decisionPrompt: null }),
 
   triggerAction: 'none',
   setTriggerAction: (action) => set({ triggerAction: action }),
@@ -252,6 +257,9 @@ export const useStore = create<AppState>((set, get) => ({
   setBoostEnergy: (boostEnergy) => set({ boostEnergy }),
   shieldActive: false,
   setShieldActive: (shieldActive) => set({ shieldActive }),
+
+  decisionPrompt: null,
+  setDecisionPrompt: (decisionPrompt) => set({ decisionPrompt }),
 
   cinematicBriefingOpen: false,
   setCinematicBriefingOpen: (cinematicBriefingOpen) => set({ cinematicBriefingOpen }),

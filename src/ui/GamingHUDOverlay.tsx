@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Gamepad2, Navigation } from 'lucide-react';
 
 /** Minimal, explicit manual mode: the player pilots Baymax. */
 export const GamingHUDOverlay: React.FC = () => {
-  const { manualPilotActive, setManualPilotActive, setManualInput, waypoint, setWaypoint } = useStore();
+  const { manualPilotActive, setManualPilotActive, setManualInput, waypoint, setWaypoint, decisionPrompt, setDecisionPrompt } = useStore();
+  const [choice, setChoice] = useState<number | null>(null);
   const toggleManual = () => {
     setManualPilotActive(!manualPilotActive);
     setManualInput({ forward: false, backward: false, left: false, right: false, boost: false });
+    setDecisionPrompt(null);
   };
 
   useEffect(() => {
@@ -33,6 +35,13 @@ export const GamingHUDOverlay: React.FC = () => {
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, [manualPilotActive, setManualInput]);
 
+  useEffect(() => { setChoice(null); }, [decisionPrompt?.id]);
+
+  const answer = (index: number) => {
+    setChoice(index);
+    window.setTimeout(() => setDecisionPrompt(null), 1100);
+  };
+
   return (
     <div className="absolute inset-0 pointer-events-none z-20 p-4 font-mono select-none">
       <div className="flex justify-end pointer-events-auto">
@@ -43,6 +52,12 @@ export const GamingHUDOverlay: React.FC = () => {
       {manualPilotActive && <div className="absolute bottom-24 left-4 pointer-events-auto bg-[#111816]/95 border border-[#6dffb0]/40 px-3 py-2.5 max-w-[245px] text-[10px] leading-relaxed">
         <strong className="text-[#6dffb0]">PILOTING BAYMAX</strong><br />
         <span className="text-[#c9d1cd]">WASD / arrows move Baymax directly · Space boosts · click a Pixel to neutralize it. The swarm is at maximum power.</span>
+      </div>}
+      {!manualPilotActive && decisionPrompt && <div className="pixel-decision pointer-events-auto" role="group" aria-label="Pixel decision prompt">
+        <span>Pixel asks</span>
+        <strong>{decisionPrompt.question}</strong>
+        <div>{decisionPrompt.options.map((option, index) => <button key={option} onClick={() => answer(index)} className={choice === index ? (index === decisionPrompt.bestOption ? 'is-correct' : 'is-wrong') : ''}>{option}</button>)}</div>
+        {choice !== null && <em>{choice === decisionPrompt.bestOption ? decisionPrompt.outcome : 'Pixel adapts and continues the encounter.'}</em>}
       </div>}
       {waypoint && <div className="absolute bottom-24 right-4 pointer-events-auto bg-[#111816]/95 border border-white/10 px-3 py-2 text-[10px] flex items-center gap-2"><Navigation className="w-3.5 h-3.5 text-[#6dffb0]" /> Route set <button onClick={() => setWaypoint(null)} className="text-[#8a9692] hover:text-white underline">clear</button></div>}
     </div>
