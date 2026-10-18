@@ -67,6 +67,22 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     const targetRotY = -baymaxState.angle + Math.PI / 2;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, movementBlend);
 
+    // The supplied OBJ is a single unrigged mesh, so its walk is a restrained
+    // full-body stride: a grounded bob, weight shift, and small forward sway.
+    // This only runs while he is travelling, never while attacking or restored.
+    const speed = Math.hypot(baymaxState.vel.x, baymaxState.vel.y);
+    const isAttacking = baymaxState.state === 'lunge_prep' || baymaxState.state === 'lunging';
+    const walkAmount = !isPacified && !isAttacking
+      ? THREE.MathUtils.clamp((speed - 0.35) / 10, 0, 1)
+      : 0;
+    const stride = time * (4.2 + speed * 0.16);
+    const walkBob = Math.abs(Math.sin(stride)) * 0.075 * walkAmount;
+    const walkSway = Math.sin(stride * 0.5) * 0.045 * walkAmount;
+    const walkLean = Math.cos(stride) * 0.028 * walkAmount;
+    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob, poseBlend);
+    groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway, poseBlend);
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean, poseBlend);
+
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
     if (baymaxState.state === 'lunge_prep') {
       // Windup lowers Baymax before the strike.
