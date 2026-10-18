@@ -199,7 +199,15 @@ export const SimScene: React.FC = () => {
           const target = world.pixels.filter((pixel) => pixel.alive).sort((a, b) =>
             Math.hypot(a.pos.x - manualKillPoint.x, a.pos.y - manualKillPoint.y) - Math.hypot(b.pos.x - manualKillPoint.x, b.pos.y - manualKillPoint.y)
           )[0];
-          if (target) {
+          const clickDistance = target
+            ? Math.hypot(target.pos.x - manualKillPoint.x, target.pos.y - manualKillPoint.y)
+            : Number.POSITIVE_INFINITY;
+          const baymaxDistance = target
+            ? Math.hypot(target.pos.x - world.baymax.pos.x, target.pos.y - world.baymax.pos.y)
+            : Number.POSITIVE_INFINITY;
+          // A manual hit needs both a precise click near Pixel's ground
+          // projection and a target inside Baymax's active combat range.
+          if (target && clickDistance <= 34 && baymaxDistance <= world.baymax.scanRadius) {
             target.alive = false;
             target.deathTime = world.timeElapsed;
             target.inContactWithBaymax = false;
