@@ -149,7 +149,13 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
           style={{ objectPosition: 'center center', transform: 'scale(1.34)' }}
         />
       </div>
-      <audio ref={soundtrackRef} src="/assets/portal_soundtrack.mp3" loop preload="auto" />
+      <audio
+        ref={soundtrackRef}
+        src="/assets/portal_soundtrack.mp3"
+        autoPlay
+        loop
+        preload="auto"
+      />
 
       <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
