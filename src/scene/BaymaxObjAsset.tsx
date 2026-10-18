@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
 
 /** Renders the user-provided Baymax OBJ model from Desktop/baymax. */
@@ -11,6 +12,17 @@ export const BaymaxObjAsset: React.FC<{ pacified: boolean; onReady: () => void }
     copy.traverse((node) => {
       if (!(node instanceof THREE.Mesh)) return;
       const isStamp = /stamp/i.test(node.name);
+
+      // The supplied OBJ stores separate normals per face. Merge those seams
+      // and regenerate smooth normals so the vinyl shell reads as one soft,
+      // inflated surface instead of a faceted mesh.
+      const geometry = node.geometry.clone();
+      geometry.deleteAttribute('normal');
+      const smoothedGeometry = mergeVertices(geometry, 0.0001);
+      smoothedGeometry.computeVertexNormals();
+      smoothedGeometry.normalizeNormals();
+      node.geometry = smoothedGeometry;
+
       node.material = new THREE.MeshPhysicalMaterial({
         color: isStamp ? '#d84a4a' : '#f8fbfd',
         roughness: isStamp ? 0.32 : 0.2,
@@ -18,7 +30,9 @@ export const BaymaxObjAsset: React.FC<{ pacified: boolean; onReady: () => void }
         clearcoat: isStamp ? 0.2 : 0.62,
         clearcoatRoughness: 0.15,
         sheen: isStamp ? 0 : 0.28,
-        sheenColor: new THREE.Color('#dceafa')
+        sheenColor: new THREE.Color('#dceafa'),
+        flatShading: false,
+        dithering: true
       });
       node.castShadow = true;
       node.receiveShadow = true;
