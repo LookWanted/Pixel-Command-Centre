@@ -42,27 +42,64 @@ function formationMatrix(
     return;
   }
 
-  const local = index % BOTS_PER_COMMANDER;
-  const group = Math.floor(index / BOTS_PER_COMMANDER);
   const bx = baymax.pos.x * 0.1;
   const bz = baymax.pos.y * 0.1;
-  const phase = Math.floor(time / 9) % 3;
-  const angle = (local / BOTS_PER_COMMANDER) * Math.PI * 2 + group * 0.61 + time * 0.35;
-  let radius = 1.85 + (group % 3) * 0.44;
-  let y = 0.18 + (local % 3) * 0.14;
+  const cycle = Math.floor(time / 10);
+  const cycleTime = time % 10;
+  // Each 10-second window picks a deterministic-but-varied structure. The
+  // opening three seconds are the build; the rest is chaotic attack motion.
+  const structure = Math.floor(Math.abs(Math.sin((cycle + 1) * 91.73)) * 3) % 3;
+  const buildStrength = cycleTime < 3 ? THREE.MathUtils.smootherstep(cycleTime / 3, 0, 1) : 0;
+  const releaseStrength = cycleTime > 8.5 ? 1 - THREE.MathUtils.smootherstep((cycleTime - 8.5) / 1.5, 0, 1) : 1;
+  const formationStrength = buildStrength * releaseStrength;
 
-  if (phase === 1) {
-    // Vertical helix pillars: the swarm is building around Baymax.
-    radius = 2.25 + (local % 2) * 0.35;
-    y = 0.16 + local * 0.2;
-  } else if (phase === 2) {
-    // Low shell: a closing ring that leaves Baymax's face readable.
-    radius = 1.6 + (local % 5) * 0.34;
-    y = 0.2 + Math.abs(Math.sin(angle * 1.5)) * 1.18;
+  // Aggressive individual flight paths: every nanobot dives, swerves and
+  // circles Baymax independently rather than moving as a permanent formation.
+  const seed = index * 1.618;
+  const attackAngle = time * (1.1 + (index % 7) * 0.13) + seed;
+  const attackRadius = 1.2 + ((Math.sin(time * 1.9 + seed) + 1) * 1.2) + (index % 4) * 0.22;
+  const attackX = bx + Math.cos(attackAngle) * attackRadius + Math.sin(time * 4.4 + seed) * 0.36;
+  const attackZ = bz + Math.sin(attackAngle * 1.27) * attackRadius + Math.cos(time * 3.8 + seed) * 0.36;
+  const attackY = 0.18 + Math.abs(Math.sin(time * 2.8 + seed)) * 1.85;
+
+  let fx = bx;
+  let fy = 1.2;
+  let fz = bz;
+  if (structure === 0) {
+    // Cube: 5 × 4 × 5 lattice.
+    const gx = (index % 5) - 2;
+    const gy = (Math.floor(index / 5) % 4) - 1.5;
+    const gz = Math.floor(index / 20) - 2;
+    fx += gx * 0.62; fy += gy * 0.62; fz += gz * 0.62;
+  } else if (structure === 1) {
+    // Sphere: evenly distributed Fibonacci shell.
+    const ratio = (index + 0.5) / BOT_COUNT;
+    const polar = Math.acos(1 - ratio * 2);
+    const azimuth = Math.PI * (3 - Math.sqrt(5)) * index;
+    const radius = 2.45;
+    fx += Math.cos(azimuth) * Math.sin(polar) * radius;
+    fy += Math.cos(polar) * radius;
+    fz += Math.sin(azimuth) * Math.sin(polar) * radius;
+  } else {
+    // Hexagon: five stacked six-sided rings, closed around the target.
+    const ring = Math.floor(index / 20);
+    const point = index % 20;
+    const side = Math.floor(point / 4);
+    const sideT = (point % 4) / 4;
+    const a = side * Math.PI / 3;
+    const b = (side + 1) * Math.PI / 3;
+    const radius = 2.35;
+    fx += (Math.cos(a) * (1 - sideT) + Math.cos(b) * sideT) * radius;
+    fz += (Math.sin(a) * (1 - sideT) + Math.sin(b) * sideT) * radius;
+    fy += (ring - 2) * 0.58;
   }
 
-  dummy.position.set(bx + Math.cos(angle) * radius, y + Math.sin(time * 2.4 + index) * 0.04, bz + Math.sin(angle) * radius);
-  dummy.rotation.set(0, -angle + Math.PI / 2, phase === 1 ? Math.sin(angle * 2) * 0.12 : 0);
+  dummy.position.set(
+    THREE.MathUtils.lerp(attackX, fx, formationStrength),
+    THREE.MathUtils.lerp(attackY, fy, formationStrength),
+    THREE.MathUtils.lerp(attackZ, fz, formationStrength)
+  );
+  dummy.rotation.set(time * 1.7 + seed, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.35 * (1 - formationStrength));
   dummy.scale.setScalar(0.012);
   dummy.updateMatrix();
 }

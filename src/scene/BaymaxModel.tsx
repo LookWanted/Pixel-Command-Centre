@@ -25,6 +25,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   const chipLightRef = useRef<THREE.PointLight>(null);
   const scaleTargetRef = useRef(new THREE.Vector3(1, 1, 1));
   const walkMotionRef = useRef<BaymaxWalkMotion>({ stride: 0, amount: 0 });
+  const flyOutProgressRef = useRef(0);
   const [cadReady, setCadReady] = useState(false);
   const handleCadReady = useCallback(() => setCadReady(true), []);
 
@@ -61,6 +62,9 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     // Frame-rate-independent easing prevents position and pose pops under load.
     const movementBlend = 1 - Math.exp(-12 * delta);
     const poseBlend = 1 - Math.exp(-10 * delta);
+    if (isPacified) flyOutProgressRef.current = Math.min(1, flyOutProgressRef.current + delta * 0.16);
+    else flyOutProgressRef.current = 0;
+    const launch = THREE.MathUtils.smootherstep(Math.max(0, (flyOutProgressRef.current - 0.16) / 0.84), 0, 1);
     groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, movementBlend);
     groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, targetZ, movementBlend);
 
@@ -80,7 +84,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     const walkBob = Math.abs(Math.sin(stride)) * 0.075 * walkAmount;
     const walkSway = Math.sin(stride * 0.5) * 0.045 * walkAmount;
     const walkLean = Math.cos(stride) * 0.028 * walkAmount;
-    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob, poseBlend);
+    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob + launch * 18, poseBlend);
     groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway, poseBlend);
     groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean, poseBlend);
     walkMotionRef.current.stride = stride;
@@ -172,6 +176,19 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
       <Suspense fallback={null}>
         <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} walkMotionRef={walkMotionRef} />
       </Suspense>
+      {isPacified && (
+        <group position={[0, 0.2, 0]}>
+          {[-0.46, 0.46].map((x) => (
+            <group key={x} position={[x, 0, -0.08]} rotation={[Math.PI, 0, 0]}>
+              <mesh>
+                <coneGeometry args={[0.18, 1.05, 18]} />
+                <meshBasicMaterial color="#63dfff" transparent opacity={0.8} toneMapped={false} />
+              </mesh>
+              <pointLight position={[0, 0.34, 0]} color="#63dfff" intensity={2.1} distance={4} />
+            </group>
+          ))}
+        </group>
+      )}
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
         position={[0, 6.35, 0]}
