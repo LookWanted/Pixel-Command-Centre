@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { BaymaxState, PixelState } from '../sim/types';
-import { BaymaxObjAsset } from './BaymaxObjAsset';
+import { BaymaxObjAsset, BaymaxWalkMotion } from './BaymaxObjAsset';
 
 interface BaymaxModelProps {
   baymaxState: BaymaxState;
@@ -24,6 +24,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   const chipRef = useRef<THREE.Mesh>(null);
   const chipLightRef = useRef<THREE.PointLight>(null);
   const scaleTargetRef = useRef(new THREE.Vector3(1, 1, 1));
+  const walkMotionRef = useRef<BaymaxWalkMotion>({ stride: 0, amount: 0 });
   const [cadReady, setCadReady] = useState(false);
   const handleCadReady = useCallback(() => setCadReady(true), []);
 
@@ -82,6 +83,8 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob, poseBlend);
     groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway, poseBlend);
     groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean, poseBlend);
+    walkMotionRef.current.stride = stride;
+    walkMotionRef.current.amount = walkAmount;
 
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
     if (baymaxState.state === 'lunge_prep') {
@@ -167,7 +170,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       <Suspense fallback={null}>
-        <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} />
+        <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} walkMotionRef={walkMotionRef} />
       </Suspense>
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
