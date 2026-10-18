@@ -1,15 +1,20 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 
-type Mood = { label: string; asset: string };
+type Mood = { label: string; pixels: number[] };
 
-// Exact LED expressions cropped from the supplied Desktop faces.heic asset.
+// Clean LED-matrix versions of the five supplied expressions only.
 const moods: Mood[] = [
-  { label: 'Overrun', asset: '/assets/faces/overrun.png' },
-  { label: 'Ambush', asset: '/assets/faces/ambush.png' },
-  { label: 'Pursuit', asset: '/assets/faces/pursuit.png' },
-  { label: 'Tracking', asset: '/assets/faces/tracking.png' },
-  { label: 'Calm', asset: '/assets/faces/calm.png' }
+  // Two upward carets
+  { label: 'Overrun', pixels: [9, 15, 17, 22, 24, 11, 19, 21, 23, 25] },
+  // Two vertical bars
+  { label: 'Ambush', pixels: [8, 15, 22, 29, 36, 12, 19, 26, 33, 40] },
+  // Inward chevrons
+  { label: 'Pursuit', pixels: [9, 15, 21, 29, 37, 13, 19, 27, 33, 39] },
+  // Two tilted LED rings
+  { label: 'Tracking', pixels: [8, 9, 15, 17, 22, 24, 29, 30, 12, 13, 19, 21, 26, 28, 33, 34] },
+  // Two round LED rings
+  { label: 'Calm', pixels: [8, 9, 10, 15, 17, 22, 24, 29, 30, 12, 13, 14, 19, 21, 26, 28, 33, 34] }
 ];
 
 const moodIndex = (status: string, baymaxState: string, health: number) => {
@@ -31,7 +36,7 @@ export const PixelEmotions: React.FC = () => {
         <span>{moods[active].label}</span>
       </div>
       <div className="pixel-expression pixel-expression--large" aria-label={`Pixel emotion: ${moods[active].label}`}>
-        <img src={moods[active].asset} alt={`${moods[active].label} Pixel LED expression`} />
+        {Array.from({ length: 49 }, (_, dot) => <i key={dot} className={moods[active].pixels.includes(dot) ? 'is-lit' : ''} />)}
       </div>
     </section>
   );
