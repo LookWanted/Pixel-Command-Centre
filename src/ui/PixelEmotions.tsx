@@ -6,15 +6,15 @@ type Mood = { label: string; pixels: number[] };
 // Clean LED-matrix versions of the five supplied expressions only.
 const moods: Mood[] = [
   // Two upward carets
-  { label: 'Overrun', pixels: [9, 15, 17, 22, 24, 11, 19, 21, 23, 25] },
+  { label: 'Overrun', pixels: [11, 19, 21, 28, 30, 15, 23, 25, 32, 34] },
   // Two vertical bars
-  { label: 'Ambush', pixels: [8, 15, 22, 29, 36, 12, 19, 26, 33, 40] },
+  { label: 'Ambush', pixels: [11, 20, 29, 38, 47, 15, 24, 33, 42, 51] },
   // Inward chevrons
-  { label: 'Pursuit', pixels: [9, 15, 21, 29, 37, 13, 19, 27, 33, 39] },
-  // Two tilted LED rings
-  { label: 'Tracking', pixels: [8, 9, 15, 17, 22, 24, 29, 30, 12, 13, 19, 21, 26, 28, 33, 34] },
-  // Two round LED rings
-  { label: 'Calm', pixels: [8, 9, 10, 15, 17, 22, 24, 29, 30, 12, 13, 14, 19, 21, 26, 28, 33, 34] }
+  { label: 'Pursuit', pixels: [11, 19, 27, 37, 47, 15, 25, 35, 43, 51] },
+  // Two diagonal, slightly narrowed eyes
+  { label: 'Tracking', pixels: [11, 12, 19, 21, 28, 30, 37, 38, 15, 16, 23, 25, 32, 34, 41, 42] },
+  // Two unmistakable round LED eyes: O   O
+  { label: 'Calm', pixels: [10, 11, 12, 19, 21, 28, 30, 37, 38, 39, 14, 15, 16, 23, 25, 32, 34, 41, 42, 43] }
 ];
 
 const moodIndex = (status: string, baymaxState: string, health: number) => {
@@ -36,7 +36,7 @@ export const PixelEmotions: React.FC = () => {
         <span>{moods[active].label}</span>
       </div>
       <div className="pixel-expression pixel-expression--large" aria-label={`Pixel emotion: ${moods[active].label}`}>
-        {Array.from({ length: 49 }, (_, dot) => <i key={dot} className={moods[active].pixels.includes(dot) ? 'is-lit' : ''} />)}
+        {Array.from({ length: 63 }, (_, dot) => <i key={dot} className={moods[active].pixels.includes(dot) ? 'is-lit' : ''} />)}
       </div>
     </section>
   );
