@@ -216,7 +216,8 @@ export const useStore = create<AppState>((set, get) => ({
   quality: 'high',
   setQuality: (quality) => set({ quality }),
 
-  cinematicCamera: true,
+  // Free orbit is the default; tracking is an explicit user choice.
+  cinematicCamera: false,
   setCinematicCamera: (cinematicCamera) => set({ cinematicCamera }),
   baymaxPov: false,
   setBaymaxPov: (baymaxPov) => set({ baymaxPov }),

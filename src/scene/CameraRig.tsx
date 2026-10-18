@@ -64,15 +64,13 @@ export const CameraRig: React.FC<CameraRigProps> = ({
         return;
       }
 
-      // Gentle idle drift
-      const time = state.clock.getElapsedTime();
-      const driftX = Math.sin(time * 0.15) * 1.2;
-      const driftZ = Math.cos(time * 0.12) * 1.0;
-
-      // Push in closer during chip extraction
-      const zoomFactor = 1.0 - extractionProgress * 0.28;
-
       if (cinematic) {
+        // Follow-cam is opt-in. In free mode we must not write to the camera
+        // or its target: OrbitControls owns both so every angle can be held.
+        const time = state.clock.getElapsedTime();
+        const driftX = Math.sin(time * 0.15) * 1.2;
+        const driftZ = Math.cos(time * 0.12) * 1.0;
+        const zoomFactor = 1.0 - extractionProgress * 0.28;
         // Follow-cam mode active: tracks Baymax dynamics
         const targetCamX = bx * 0.5 + driftX;
         const targetCamY = (15.5 + Math.sin(time * 0.1) * 0.6) * zoomFactor * zoom;
@@ -86,20 +84,6 @@ export const CameraRig: React.FC<CameraRigProps> = ({
         currentTarget.x = THREE.MathUtils.lerp(currentTarget.x, bx, delta * 3.5);
         currentTarget.y = THREE.MathUtils.lerp(currentTarget.y, 1.8, delta * 3.5);
         currentTarget.z = THREE.MathUtils.lerp(currentTarget.z, bz, delta * 3.5);
-      } else {
-        // Fixed arena overview mode
-        const targetCamX = driftX;
-        const targetCamY = 16.5 * zoomFactor * zoom;
-        const targetCamZ = 21.0 * zoomFactor * zoom + driftZ;
-
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetCamX + shakeX, delta * 2.5);
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCamY + shakeY, delta * 2.5);
-        camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetCamZ, delta * 2.5);
-
-        const currentTarget = controlsRef.current.target;
-        currentTarget.x = THREE.MathUtils.lerp(currentTarget.x, 0, delta * 3.0);
-        currentTarget.y = THREE.MathUtils.lerp(currentTarget.y, 1.5, delta * 3.0);
-        currentTarget.z = THREE.MathUtils.lerp(currentTarget.z, 0, delta * 3.0);
       }
       controlsRef.current.update();
     } else if (shakeIntensity.current > 0) {
@@ -114,10 +98,12 @@ export const CameraRig: React.FC<CameraRigProps> = ({
       enableDamping
       enableRotate={!baymaxPov}
       enableZoom={!baymaxPov}
+      enablePan={!baymaxPov}
       dampingFactor={0.06}
-      maxPolarAngle={Math.PI / 2 - 0.05} // don't go below ground
-      minDistance={10}
-      maxDistance={85}
+      minPolarAngle={0.03}
+      maxPolarAngle={Math.PI / 2 - 0.015}
+      minDistance={4}
+      maxDistance={110}
     />
   );
 };
