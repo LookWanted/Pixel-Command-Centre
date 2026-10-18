@@ -1,9 +1,9 @@
-import React, { useRef, useMemo, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useState, useCallback, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { BaymaxState, PixelState } from '../sim/types';
-import { BaymaxCadAsset } from './BaymaxCadAsset';
+import { BaymaxObjAsset } from './BaymaxObjAsset';
 
 interface BaymaxModelProps {
   baymaxState: BaymaxState;
@@ -144,7 +144,9 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
-      <BaymaxCadAsset pacified={isPacified} onReady={handleCadReady} />
+      <Suspense fallback={null}>
+        <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} />
+      </Suspense>
       {/* HTML Tactical Status Pill: Never mirrors, crisply rendered */}
       <Html
         position={[0, 4.4, 0]}
