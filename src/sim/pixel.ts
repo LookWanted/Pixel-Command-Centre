@@ -122,8 +122,11 @@ export function updatePixels(
     const finalVx = desiredVx + sepX;
     const finalVy = desiredVy + sepY;
 
-    p.vel.x += (finalVx - p.vel.x) * Math.min(1.0, dt * 7.0);
-    p.vel.y += (finalVy - p.vel.y) * Math.min(1.0, dt * 7.0);
+    // A solo airborne commander changes direction decisively, making its
+    // evasive flight feel unlike the old slow ground swarm.
+    const turnResponse = pixels.length === 1 ? 16.0 : 7.0;
+    p.vel.x += (finalVx - p.vel.x) * Math.min(1.0, dt * turnResponse);
+    p.vel.y += (finalVy - p.vel.y) * Math.min(1.0, dt * turnResponse);
 
     p.pos.x += p.vel.x * dt;
     p.pos.y += p.vel.y * dt;

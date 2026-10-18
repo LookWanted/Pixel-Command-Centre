@@ -7,7 +7,7 @@ import { assignInitialRoles, checkRoleContact, handleBackupPromotions } from './
 export const DEFAULT_CONFIG: SimConfig = {
   // One visible airborne Pixel commander directs the nanobot swarm.
   pixelCount: 1,
-  pixelSpeed: 115,
+  pixelSpeed: 205,
   baymaxSpeed: 68,
   retargetInterval: 2.0,
   lungeInterval: 3.6,
@@ -162,7 +162,28 @@ export function step(world: SimWorld, dt: number): SimWorld {
   // 6. Win / Lose check
   const alivePixels = world.pixels.filter(p => p.alive);
 
-  if (world.config.missionMode === 'extract') {
+  // The nanobots attack in short waves. When they peel away to build a
+  // structure, Baymax gets a brief recovery window instead of passive damage.
+  const swarmPhase = world.timeElapsed % 18;
+  const structureWindow = swarmPhase >= 3 && swarmPhase < 14;
+  const pressure = alivePixels.length > 0 ? (structureWindow ? 0.12 : 3.3) : 0;
+  world.baymax.health = Math.max(0, world.baymax.health - pressure * dt);
+
+  if (world.baymax.health <= 0) {
+    world.status = 'failed';
+    world.statusReason = 'Baymax was overwhelmed by the nanobot swarm.';
+    const event = {
+      id: `baymax_overwhelmed_${world.timeElapsed}`,
+      time: world.timeElapsed,
+      kind: 'mission_failed' as const,
+      message: `[CRITICAL] Baymax health depleted. The nanobot swarm overwhelmed the arena.`,
+      data: {}
+    };
+    world.events.push(event);
+    world.recentEvents.push(event);
+  }
+
+  if (world.status === 'running' && world.config.missionMode === 'extract') {
     if (world.extractionProgress >= 1.0) {
       // Extraction has a deliberate 50/50 outcome: half of the time the chip
       // destabilises Baymax instead of restoring him, keeping every episode uncertain.
@@ -208,7 +229,7 @@ export function step(world: SimWorld, dt: number): SimWorld {
       world.events.push(event);
       world.recentEvents.push(event);
     }
-  } else {
+  } else if (world.status === 'running') {
     // Decoy mode has no clock-based success condition: it remains a live
     // training run until the operator resets it or the squad is eliminated.
     if (alivePixels.length === 0) {

@@ -5,6 +5,7 @@ import { Activity } from 'lucide-react';
 export const SimpleAnalytics: React.FC = () => {
   const { snapshot, eventLog, hiveLearningHistory } = useStore();
   const pct = Math.round(snapshot.extractionProgress * 100);
+  const healthPct = Math.round(snapshot.baymaxHealth);
   const signalPoints = useMemo(() => {
     const values = hiveLearningHistory.length ? hiveLearningHistory : [{ time: 0, value: snapshot.hiveSignal }];
     if (values.length === 1) return `0,76 100,${76 - values[0].value * 64}`;
@@ -22,6 +23,7 @@ export const SimpleAnalytics: React.FC = () => {
         <div><span>Hive learning</span><b>{Math.round(snapshot.hiveKnowledge * 100)}<em>%</em></b></div>
       </div>
       <div className="progress-label"><span>Chip removal</span><b>{pct}%</b></div><div className="thin-progress"><i style={{ width: `${pct}%` }} /></div>
+      <div className="progress-label"><span>Baymax health</span><b>{healthPct}%</b></div><div className="thin-progress health-progress"><i style={{ width: `${healthPct}%` }} /></div>
     </section>
     <section className="simple-panel technical-chart" aria-label="Hive learning pulse chart">
       <div className="chart-heading"><p className="side-eyebrow">Hive learning pulse</p><span>{Math.round(snapshot.hiveSignal * 100)}%</span></div>

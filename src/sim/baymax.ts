@@ -17,7 +17,8 @@ export function createBaymax(config: SimConfig): BaymaxState {
     lungeProgress: 0,
     scanRadius: 210,
     wastedRetargets: 0,
-    grippedCount: 0
+    grippedCount: 0,
+    health: 100
   };
 }
 

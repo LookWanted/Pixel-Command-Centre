@@ -39,6 +39,7 @@ export interface BaymaxState {
   scanRadius: number;
   wastedRetargets: number;
   grippedCount: number; // holders attached
+  health: number; // 0 to 100, depleted by coordinated nanobot pressure
 }
 
 export interface SimConfig {

@@ -17,17 +17,17 @@ function PixelRobotHero({ pointer }: { pointer: { x: number; y: number } }) {
     if (groupRef.current) {
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        pointer.x * 0.78,
-        1 - Math.exp(-9 * delta)
+        pointer.x * 1.05,
+        1 - Math.exp(-12 * delta)
       );
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        -pointer.y * 0.24,
-        1 - Math.exp(-9 * delta)
+        -pointer.y * 0.34,
+        1 - Math.exp(-12 * delta)
       );
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.12, 1 - Math.exp(-8 * delta));
-      targetPosition.current.set(2.2 + pointer.x * 0.9, -0.4 - pointer.y * 0.5, 0);
-      groupRef.current.position.lerp(targetPosition.current, 1 - Math.exp(-7 * delta));
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.18, 1 - Math.exp(-10 * delta));
+      targetPosition.current.set(2.2 + pointer.x * 1.35, -0.4 - pointer.y * 0.72, pointer.x * -0.28);
+      groupRef.current.position.lerp(targetPosition.current, 1 - Math.exp(-10 * delta));
     }
   });
 
@@ -43,7 +43,7 @@ function PixelRobotHero({ pointer }: { pointer: { x: number; y: number } }) {
   }, [scene]);
 
   return (
-    <Float speed={2} rotationIntensity={0.2} floatIntensity={0.4}>
+    <Float speed={2.6} rotationIntensity={0.28} floatIntensity={0.55}>
       {/* Positioned towards 70% center (right side) to balance hero typography on left */}
       <group ref={groupRef} position={[2.2, -0.4, 0]} scale={1.85}>
         <primitive object={cloned} />

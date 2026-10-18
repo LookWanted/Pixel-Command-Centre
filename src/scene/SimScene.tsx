@@ -266,6 +266,7 @@ export const SimScene: React.FC = () => {
         wastedRetargets: world.baymax.wastedRetargets,
         baymaxState: world.baymax.state,
         baymaxGrippedCount: world.baymax.grippedCount,
+        baymaxHealth: world.baymax.health,
         holderActive: world.pixels.some(p => p.alive && p.role === 'holder' && p.inContactWithBaymax),
         pullerActive: world.pixels.some(p => p.alive && p.role === 'puller' && p.inContactWithBaymax),
         grabberActive: world.pixels.some(p => p.alive && p.role === 'grabber' && p.inContactWithBaymax),

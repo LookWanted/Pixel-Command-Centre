@@ -16,6 +16,7 @@ export interface UIWorldSnapshot {
   wastedRetargets: number;
   baymaxState: string;
   baymaxGrippedCount: number;
+  baymaxHealth: number;
   holderActive: boolean;
   pullerActive: boolean;
   grabberActive: boolean;
@@ -146,6 +147,7 @@ export const useStore = create<AppState>((set, get) => ({
     wastedRetargets: 0,
     baymaxState: 'scan',
     baymaxGrippedCount: 0,
+    baymaxHealth: 100,
     holderActive: false,
     pullerActive: false,
     grabberActive: false,

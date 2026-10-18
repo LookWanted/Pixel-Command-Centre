@@ -14,6 +14,10 @@ export function assignInitialRoles(pixels: PixelState[], missionMode: 'extract' 
   // Reset all to decoy first
   pixels.forEach(p => { p.role = 'decoy'; });
 
+  // A lone Pixel is a flying commander, not one third of an extraction team.
+  // It keeps distance while directing the ground nanobot field.
+  if (alivePixels.length < 3) return;
+
   // Assign primary roles
   if (alivePixels[0]) alivePixels[0].role = 'holder';
   if (alivePixels[1]) alivePixels[1].role = 'puller';

@@ -10,7 +10,7 @@ type CadMesh = {
 type CadResult = { success: boolean; meshes: CadMesh[] };
 
 let importerPromise: Promise<void> | null = null;
-const BOT_COUNT = 100;
+const BOT_COUNT = 160;
 
 function loadCadImporter() {
   const cadWindow = window as unknown as { occtimportjs?: () => Promise<{ ReadStepFile: (data: Uint8Array, params: unknown) => CadResult }> };
@@ -67,36 +67,42 @@ function formationMatrix(
   const attackZ = bz + Math.sin(attackAngle * 1.27) * attackRadius + Math.cos(time * 3.8 + seed) * 0.3;
   const attackY = 0.035;
 
-  let fx = bx;
+  // Structures are deliberately built away from Baymax, making the swarm's
+  // regrouping obvious and giving the health system a visible respite.
+  const regroupAngle = cycle * 2.399 + Math.PI * 0.35;
+  const regroupDistance = 8.4;
+  const regroupX = bx + Math.cos(regroupAngle) * regroupDistance;
+  const regroupZ = bz + Math.sin(regroupAngle) * regroupDistance;
+  let fx = regroupX;
   let fy = 0.035;
-  let fz = bz;
+  let fz = regroupZ;
   if (structure === 0) {
-    // Cube: a clearly stacked 5 × 4 × 5 ground lattice.
-    const gx = (index % 5) - 2;
-    const gy = Math.floor(index / 5) % 4;
-    const gz = Math.floor(index / 20) - 2;
-    fx += gx * 0.52; fy += gy * 0.5; fz += gz * 0.52;
+    // Cube: a dense 6 × 5 × 6 ground lattice.
+    const gx = (index % 6) - 2.5;
+    const gy = Math.floor(index / 6) % 5;
+    const gz = Math.floor(index / 30) - 2.5;
+    fx += gx * 0.42; fy += gy * 0.4; fz += gz * 0.42;
   } else if (structure === 1) {
     // Sphere: an unmistakable, ground-resting Fibonacci shell.
     const ratio = (index + 0.5) / BOT_COUNT;
     const polar = Math.acos(1 - ratio * 2);
     const azimuth = Math.PI * (3 - Math.sqrt(5)) * index;
-    const radius = 2.15;
+    const radius = 1.9;
     fx += Math.cos(azimuth) * Math.sin(polar) * radius;
     fy += radius + Math.cos(polar) * radius;
     fz += Math.sin(azimuth) * Math.sin(polar) * radius;
   } else {
-    // Hexagon: five tall, six-sided rings closed around the target.
+    // Hexagon: eight tightly packed, six-sided rings away from Baymax.
     const ring = Math.floor(index / 20);
     const point = index % 20;
     const side = Math.floor(point / 4);
     const sideT = (point % 4) / 4;
     const a = side * Math.PI / 3;
     const b = (side + 1) * Math.PI / 3;
-    const radius = 2.2;
+    const radius = 2.0;
     fx += (Math.cos(a) * (1 - sideT) + Math.cos(b) * sideT) * radius;
     fz += (Math.sin(a) * (1 - sideT) + Math.sin(b) * sideT) * radius;
-    fy += ring * 0.5;
+    fy += ring * 0.38;
   }
 
   dummy.position.set(
@@ -105,7 +111,7 @@ function formationMatrix(
     THREE.MathUtils.lerp(attackZ, fz, formationStrength)
   );
   dummy.rotation.set(0, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.16 * (1 - formationStrength));
-  dummy.scale.setScalar(0.014);
+  dummy.scale.setScalar(0.011);
   dummy.updateMatrix();
 }
 
@@ -140,7 +146,7 @@ const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax
   return <instancedMesh ref={ref} args={[geometryRef.current, materialRef.current, BOT_COUNT]} frustumCulled={false} />;
 };
 
-/** One hundred supplied Big Hero nanobots, directed by the airborne Pixel commander. */
+/** A dense ground field of supplied Big Hero nanobots, directed by the airborne Pixel commander. */
 export const NanobotSwarm: React.FC<{ commanders: PixelState[]; baymax: BaymaxState }> = ({ commanders, baymax }) => {
   const [meshes, setMeshes] = useState<CadMesh[]>([]);
 
