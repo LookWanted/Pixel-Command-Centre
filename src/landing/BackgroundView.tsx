@@ -58,7 +58,6 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
   const [scrubAngle, setScrubAngle] = useState(0.2);
   const videoRef = useRef<HTMLVideoElement>(null);
   const soundtrackRef = useRef<HTMLAudioElement>(null);
-  const soundtrackStartedRef = useRef(false);
 
   // Mouse controls only the 3D Pixel model. The cinematic remains a continuous loop.
   useEffect(() => {
@@ -90,44 +89,23 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
     video.play().catch(() => undefined);
   }, []);
 
-  // Start as soon as the landing experience mounts. If a browser blocks audible
-  // autoplay, the same path is retried on the visitor's first interaction.
+  // Keep the audio lifecycle deliberately simple. This is the native approach
+  // that works consistently with the local cinematic experience, including
+  // WebKit/Safari's media pipeline.
   useEffect(() => {
     const soundtrack = soundtrackRef.current;
     if (!soundtrack) return;
 
     soundtrack.volume = 0.34;
-    soundtrack.loop = true;
-
-    let disposed = false;
-    const startSoundtrack = () => {
-      if (disposed || !soundtrack.paused) return;
-      soundtrack.play()
-        .then(() => {
-          soundtrackStartedRef.current = true;
-        })
-        .catch(() => undefined);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        soundtrack.pause();
-      } else if (soundtrackStartedRef.current) {
-        soundtrack.play().catch(() => undefined);
-      }
-    };
-
-    window.addEventListener('pointerdown', startSoundtrack, { once: true, passive: true });
-    window.addEventListener('keydown', startSoundtrack, { once: true });
-    document.addEventListener('visibilitychange', handleVisibility);
+    const startSoundtrack = () => soundtrack.play().catch(() => undefined);
     startSoundtrack();
+
+    window.addEventListener('pointerdown', startSoundtrack, { once: true });
+    window.addEventListener('keydown', startSoundtrack, { once: true });
     return () => {
-      disposed = true;
       window.removeEventListener('pointerdown', startSoundtrack);
       window.removeEventListener('keydown', startSoundtrack);
-      document.removeEventListener('visibilitychange', handleVisibility);
       soundtrack.pause();
-      soundtrack.currentTime = 0;
-      soundtrackStartedRef.current = false;
     };
   }, []);
 
