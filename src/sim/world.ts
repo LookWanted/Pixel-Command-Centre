@@ -175,7 +175,9 @@ export function step(world: SimWorld, dt: number): SimWorld {
       // At more than 10% health the swarm commits to an aggressive takedown.
       // Below that, it falls back to a normal attack pattern: still dangerous,
       // but leaving a narrow chance for Baymax to finish the commander.
-      const attackDamage = world.baymax.health > 10 ? 5.2 : 1.9;
+      // A full swarm pass must feel consequential: above the critical-health
+      // threshold, Baymax loses ground quickly if he does not remove Pixel.
+      const attackDamage = world.baymax.health > 10 ? 7.4 : 2.6;
       world.baymax.health = Math.max(0, world.baymax.health - attackDamage * dt);
     }
   }
