@@ -162,17 +162,21 @@ export function step(world: SimWorld, dt: number): SimWorld {
   // 6. Win / Lose check
   const alivePixels = world.pixels.filter(p => p.alive);
 
-  // The nanobots attack in short waves. When they peel away to build a
-  // structure, Baymax gets a brief recovery window instead of passive damage.
+  // The nanobots attack in short waves. Formation time is only a small breather,
+  // not a full heal: a healthy Baymax has to keep moving or the swarm can win.
   const swarmPhase = world.timeElapsed % 18;
   const structureWindow = swarmPhase >= 3 && swarmPhase < 14;
   if (alivePixels.length > 0) {
     if (structureWindow) {
-      // While the swarm is assembled away from Baymax, he gets meaningful
-      // recovery time rather than losing health continuously forever.
-      world.baymax.health = Math.min(100, world.baymax.health + 2.15 * dt);
+      // While assembling, the swarm is out of striking range. Recovery is
+      // deliberately modest so it cannot erase a whole attack wave.
+      world.baymax.health = Math.min(100, world.baymax.health + 0.35 * dt);
     } else {
-      world.baymax.health = Math.max(0, world.baymax.health - 3.0 * dt);
+      // At more than 10% health the swarm commits to an aggressive takedown.
+      // Below that, it falls back to a normal attack pattern: still dangerous,
+      // but leaving a narrow chance for Baymax to finish the commander.
+      const attackDamage = world.baymax.health > 10 ? 5.2 : 1.9;
+      world.baymax.health = Math.max(0, world.baymax.health - attackDamage * dt);
     }
   }
 
