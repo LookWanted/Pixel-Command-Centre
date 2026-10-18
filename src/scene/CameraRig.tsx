@@ -72,9 +72,11 @@ export const CameraRig: React.FC<CameraRigProps> = ({
         const driftZ = Math.cos(time * 0.12) * 1.0;
         const zoomFactor = 1.0 - extractionProgress * 0.28;
         // Follow-cam mode active: tracks Baymax dynamics
-        const targetCamX = bx * 0.5 + driftX;
+        // Follow Baymax's actual arena position. The old half-strength X
+        // offset let him drift out of frame whenever he crossed the range.
+        const targetCamX = bx + driftX;
         const targetCamY = (15.5 + Math.sin(time * 0.1) * 0.6) * zoomFactor * zoom;
-        const targetCamZ = bz * 0.5 + 19.5 * zoomFactor * zoom + driftZ;
+        const targetCamZ = bz + 19.5 * zoomFactor * zoom + driftZ;
 
         camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetCamX + shakeX, delta * 3.0);
         camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCamY + shakeY, delta * 3.0);

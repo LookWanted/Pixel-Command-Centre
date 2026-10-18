@@ -1,9 +1,9 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
-import { BookOpen, Crosshair, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { BookOpen, Crosshair, Focus, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 
 export const SimpleHeader: React.FC<{ onBackToLanding?: () => void }> = ({ onBackToLanding }) => {
-  const { isPaused, togglePause, requestReset, setCinematicBriefingOpen, snapshot, baymaxPov, setBaymaxPov, cameraZoom, setCameraZoom } = useStore();
+  const { isPaused, togglePause, requestReset, setCinematicBriefingOpen, snapshot, baymaxPov, setBaymaxPov, cinematicCamera, setCinematicCamera, cameraZoom, setCameraZoom } = useStore();
   const settled = snapshot.status === 'success';
   return (
     <header className="app-header">
@@ -17,6 +17,7 @@ export const SimpleHeader: React.FC<{ onBackToLanding?: () => void }> = ({ onBac
         <button onClick={requestReset} className="icon-button" aria-label="Restart episode"><RotateCcw /></button>
         <button onClick={() => setCameraZoom(cameraZoom - 0.14)} className="icon-button" aria-label="Zoom in"><ZoomIn /></button>
         <button onClick={() => setCameraZoom(cameraZoom + 0.14)} className="icon-button" aria-label="Zoom out"><ZoomOut /></button>
+        <button onClick={() => { setCinematicCamera(!cinematicCamera); if (!cinematicCamera) setBaymaxPov(false); }} className={`secondary-button ${cinematicCamera ? 'is-active' : ''}`} aria-label={cinematicCamera ? 'Switch to free camera' : 'Follow Baymax'}><Focus /> {cinematicCamera ? 'Free camera' : 'Follow Baymax'}</button>
         <button onClick={() => setBaymaxPov(!baymaxPov)} className={`secondary-button ${baymaxPov ? 'is-active' : ''}`} aria-label="Toggle Baymax point of view"><Crosshair /> {baymaxPov ? 'Arena view' : 'Baymax POV'}</button>
         <button onClick={() => setCinematicBriefingOpen(true)} className="secondary-button" aria-label="Open instructions"><BookOpen /> How it works</button>
       </div>
