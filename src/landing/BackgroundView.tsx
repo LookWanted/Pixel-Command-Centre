@@ -89,22 +89,52 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
     video.play().catch(() => undefined);
   }, []);
 
-  // Keep the audio lifecycle deliberately simple. This is the native approach
-  // that works consistently with the local cinematic experience, including
-  // WebKit/Safari's media pipeline.
+  // The portal video is the master clock. Its clip is shorter than the score,
+  // so the soundtrack deliberately restarts with each visual loop instead of
+  // slowly drifting into an unrelated section of music.
   useEffect(() => {
     const soundtrack = soundtrackRef.current;
-    if (!soundtrack) return;
+    const video = videoRef.current;
+    if (!soundtrack || !video) return;
 
     soundtrack.volume = 0.34;
-    const startSoundtrack = () => soundtrack.play().catch(() => undefined);
+    soundtrack.loop = false;
+
+    const syncSoundtrack = (force = false) => {
+      if (soundtrack.readyState < HTMLMediaElement.HAVE_METADATA) return;
+      if (force || Math.abs(soundtrack.currentTime - video.currentTime) > 0.12) {
+        soundtrack.currentTime = video.currentTime;
+      }
+    };
+    const startSoundtrack = () => {
+      syncSoundtrack();
+      soundtrack.play().catch(() => undefined);
+    };
+    const pauseSoundtrack = () => soundtrack.pause();
+    const restartLoop = () => {
+      syncSoundtrack(true);
+      if (!video.paused) startSoundtrack();
+    };
+    const handleTimelineSync = () => syncSoundtrack();
+    const handleAudioMetadata = () => syncSoundtrack(true);
+
     startSoundtrack();
 
     window.addEventListener('pointerdown', startSoundtrack, { once: true });
     window.addEventListener('keydown', startSoundtrack, { once: true });
+    soundtrack.addEventListener('loadedmetadata', handleAudioMetadata, { once: true });
+    video.addEventListener('timeupdate', handleTimelineSync);
+    video.addEventListener('seeking', restartLoop);
+    video.addEventListener('play', startSoundtrack);
+    video.addEventListener('pause', pauseSoundtrack);
     return () => {
       window.removeEventListener('pointerdown', startSoundtrack);
       window.removeEventListener('keydown', startSoundtrack);
+      soundtrack.removeEventListener('loadedmetadata', handleAudioMetadata);
+      video.removeEventListener('timeupdate', handleTimelineSync);
+      video.removeEventListener('seeking', restartLoop);
+      video.removeEventListener('play', startSoundtrack);
+      video.removeEventListener('pause', pauseSoundtrack);
       soundtrack.pause();
     };
   }, []);
@@ -131,7 +161,6 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
         ref={soundtrackRef}
         src="/assets/portal_soundtrack.mp3"
         autoPlay
-        loop
         preload="auto"
       />
 
