@@ -42,7 +42,7 @@ export interface BaymaxState {
 }
 
 export interface SimConfig {
-  pixelCount: number;         // 3 - 20 (scalable)
+  pixelCount: number;         // One visible airborne commander
   pixelSpeed: number;         // e.g. 110
   baymaxSpeed: number;        // e.g. 65
   retargetInterval: number;   // e.g. 2.0 s

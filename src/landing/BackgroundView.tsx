@@ -7,26 +7,27 @@ interface BackgroundViewProps {
   use3DModel?: boolean;
 }
 
-function PixelRobotHero({ scrubAngle }: { scrubAngle: number }) {
+function PixelRobotHero({ pointer }: { pointer: { x: number; y: number } }) {
   const { scene } = useGLTF('/assets/models/pixel-textured.glb');
   const groupRef = useRef<THREE.Group>(null);
-  const targetRotation = useRef<number>(0.2);
+  const targetPosition = useRef(new THREE.Vector3(2.2, -0.4, 0));
 
   // Smooth lerp to mouse scrub angle
   useFrame((_, delta) => {
     if (groupRef.current) {
-      targetRotation.current = scrubAngle;
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        targetRotation.current,
-        delta * 6
+        pointer.x * 0.78,
+        1 - Math.exp(-9 * delta)
       );
-      // Gentle tilt with mouse height
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        0.05,
-        delta * 4
+        -pointer.y * 0.24,
+        1 - Math.exp(-9 * delta)
       );
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.12, 1 - Math.exp(-8 * delta));
+      targetPosition.current.set(2.2 + pointer.x * 0.9, -0.4 - pointer.y * 0.5, 0);
+      groupRef.current.position.lerp(targetPosition.current, 1 - Math.exp(-7 * delta));
     }
   });
 
@@ -55,25 +56,17 @@ function PixelRobotHero({ scrubAngle }: { scrubAngle: number }) {
 }
 
 export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = true }) => {
-  const [scrubAngle, setScrubAngle] = useState(0.2);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
   const soundtrackRef = useRef<HTMLAudioElement>(null);
 
   // Mouse controls only the 3D Pixel model. The cinematic remains a continuous loop.
   useEffect(() => {
-    let prevX: number | null = null;
-
     const handleMouseMove = (e: MouseEvent) => {
-      if (prevX === null) {
-        prevX = e.clientX;
-        return;
-      }
-      const delta = e.clientX - prevX;
-      prevX = e.clientX;
-
-      // 3D Model rotation scrub
-      setScrubAngle((prev) => prev + (delta / window.innerWidth) * Math.PI * 2.2);
-
+      setPointer({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -178,7 +171,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
             <directionalLight position={[10, 15, 10]} intensity={2.5} color="#F7E600" />
             <directionalLight position={[-10, 5, -5]} intensity={2.0} color="#3B1EFF" />
             <Suspense fallback={null}>
-              <PixelRobotHero scrubAngle={scrubAngle} />
+              <PixelRobotHero pointer={pointer} />
             </Suspense>
           </Canvas>
           {/* Subtle gradient vignette overlay */}

@@ -31,24 +31,13 @@ export const VariablesPanel: React.FC = () => {
 
       {/* Sliders List */}
       <div className="space-y-2.5">
-        {/* Swarm Size */}
+        {/* Commander count is intentionally fixed: the lone Pixel directs the nanobot swarm. */}
         <div>
           <div className="flex justify-between items-center text-[11px] mb-1">
             <span className="text-slate-300">Flying Pixel commanders</span>
-            <span className="font-extrabold text-[#00ff88]">{config.pixelCount} / 10</span>
+            <span className="font-extrabold text-[#00ff88]">1 active</span>
           </div>
-          <input
-            type="range"
-            min={5}
-            max={10}
-            step={1}
-            value={config.pixelCount}
-            onChange={(e) => {
-              updateConfig({ pixelCount: parseInt(e.target.value, 10) });
-              requestReset();
-            }}
-            className="w-full accent-[#00ff88] h-1.5 bg-slate-800 rounded appearance-none cursor-pointer"
-          />
+          <p className="text-[10px] text-slate-500">This commander coordinates the full nanobot swarm.</p>
         </div>
 
         {/* Pixel Velocity */}

@@ -5,7 +5,8 @@ import { createBaymax, updateBaymax } from './baymax';
 import { assignInitialRoles, checkRoleContact, handleBackupPromotions } from './roles';
 
 export const DEFAULT_CONFIG: SimConfig = {
-  pixelCount: 10,
+  // One visible airborne Pixel commander directs the nanobot swarm.
+  pixelCount: 1,
   pixelSpeed: 115,
   baymaxSpeed: 68,
   retargetInterval: 2.0,

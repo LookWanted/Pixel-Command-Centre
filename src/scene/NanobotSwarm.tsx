@@ -11,7 +11,6 @@ type CadResult = { success: boolean; meshes: CadMesh[] };
 
 let importerPromise: Promise<void> | null = null;
 const BOT_COUNT = 100;
-const BOTS_PER_COMMANDER = 10;
 
 function loadCadImporter() {
   const cadWindow = window as unknown as { occtimportjs?: () => Promise<{ ReadStepFile: (data: Uint8Array, params: unknown) => CadResult }> };
@@ -34,7 +33,9 @@ function formationMatrix(
   baymax: BaymaxState,
   time: number
 ) {
-  const commander = commanders[Math.floor(index / BOTS_PER_COMMANDER)];
+  // One Pixel commander now directs the full ground swarm. Modulo preserves
+  // sane ownership if a future scenario adds more commanders.
+  const commander = commanders[index % commanders.length];
   if (!commander?.alive) {
     dummy.position.set(0, -100, 0);
     dummy.scale.setScalar(0);
@@ -104,7 +105,7 @@ function formationMatrix(
     THREE.MathUtils.lerp(attackZ, fz, formationStrength)
   );
   dummy.rotation.set(0, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.16 * (1 - formationStrength));
-  dummy.scale.setScalar(0.022);
+  dummy.scale.setScalar(0.014);
   dummy.updateMatrix();
 }
 
@@ -139,7 +140,7 @@ const NanobotCadPart: React.FC<{ mesh: CadMesh; commanders: PixelState[]; baymax
   return <instancedMesh ref={ref} args={[geometryRef.current, materialRef.current, BOT_COUNT]} frustumCulled={false} />;
 };
 
-/** One hundred supplied Big Hero nanobots, grouped 10:1 under flying Pixel commanders. */
+/** One hundred supplied Big Hero nanobots, directed by the airborne Pixel commander. */
 export const NanobotSwarm: React.FC<{ commanders: PixelState[]; baymax: BaymaxState }> = ({ commanders, baymax }) => {
   const [meshes, setMeshes] = useState<CadMesh[]>([]);
 
