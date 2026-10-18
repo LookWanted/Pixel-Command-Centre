@@ -22,11 +22,13 @@ function PixelRobotHero({ pointer }: { pointer: { x: number; y: number } }) {
       );
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        -pointer.y * 0.34,
+        // Browser coordinates grow downward; invert the model response so a
+        // cursor moving up makes Pixel look and drift upward as expected.
+        pointer.y * 0.34,
         1 - Math.exp(-12 * delta)
       );
       groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.18, 1 - Math.exp(-10 * delta));
-      targetPosition.current.set(2.2 + pointer.x * 1.35, -0.4 + pointer.y * 0.72, pointer.x * -0.28);
+      targetPosition.current.set(2.2 + pointer.x * 1.35, -0.4 - pointer.y * 0.72, pointer.x * -0.28);
       groupRef.current.position.lerp(targetPosition.current, 1 - Math.exp(-10 * delta));
     }
   });
