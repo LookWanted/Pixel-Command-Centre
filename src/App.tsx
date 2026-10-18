@@ -11,6 +11,7 @@ import { GamingHUDOverlay } from './ui/GamingHUDOverlay';
 import { CinematicBriefingModal } from './ui/CinematicBriefingModal';
 import { CinematicTheaterModal } from './ui/CinematicTheaterModal';
 import { Timeline } from './ui/Timeline';
+import { EscapeCompleteScreen } from './ui/EscapeCompleteScreen';
 import { LandingPage } from './landing/LandingPage';
 
 export function App() {
@@ -77,6 +78,8 @@ export function App() {
         </aside>
       </div>
       <Timeline />
+
+      <EscapeCompleteScreen onReturnHome={handleBackToLanding} />
 
       {/* 3. 3D Model Inspector Modal */}
       <PixelModelViewer
