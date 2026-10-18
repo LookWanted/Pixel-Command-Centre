@@ -219,7 +219,9 @@ export const useStore = create<AppState>((set, get) => ({
   setQuality: (quality) => set({ quality }),
 
   // Free orbit is the default; tracking is an explicit user choice.
-  cinematicCamera: false,
+  // Keep the commander in frame when a mission first opens. Players can still
+  // switch to the free camera from the arena header at any time.
+  cinematicCamera: true,
   setCinematicCamera: (cinematicCamera) => set({ cinematicCamera }),
   baymaxPov: false,
   setBaymaxPov: (baymaxPov) => set({ baymaxPov }),
