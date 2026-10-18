@@ -42,7 +42,7 @@ const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
     group.position.lerp(positionTargetRef.current, 1 - Math.exp(-14 * delta));
     const speed = Math.hypot(pixel.vel.x, pixel.vel.y);
     if (speed > 4) group.rotation.y = -Math.atan2(pixel.vel.y, pixel.vel.x) + Math.PI / 2;
-    const scale = pixel.dodgeCooldown > 0.4 ? 0.86 : pixel.inContactWithBaymax ? 0.94 : 0.8;
+    const scale = pixel.dodgeCooldown > 0.4 ? 1.1 : pixel.inContactWithBaymax ? 1.18 : 1.05;
     group.scale.setScalar(scale);
   });
 
