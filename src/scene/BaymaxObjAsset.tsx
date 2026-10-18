@@ -74,8 +74,10 @@ export const BaymaxObjAsset: React.FC<{
   useFrame((_, delta) => {
     const blend = 1 - Math.exp(-12 * delta);
     const { stride, amount } = walkMotionRef.current;
-    const swing = Math.sin(stride) * 0.42 * amount;
-    const counterSwing = Math.sin(stride + Math.PI) * 0.42 * amount;
+    // A broad, readable stride for the overhead arena camera. The legs are
+    // deliberately 180° out of phase, creating a true pendulum silhouette.
+    const swing = Math.sin(stride) * 0.82 * amount;
+    const counterSwing = Math.sin(stride + Math.PI) * 0.82 * amount;
 
     if (leftLegRef.current) {
       leftLegRef.current.rotation.x = THREE.MathUtils.lerp(leftLegRef.current.rotation.x, swing, blend);
