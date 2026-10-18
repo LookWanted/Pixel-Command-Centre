@@ -34,13 +34,13 @@ export const VariablesPanel: React.FC = () => {
         {/* Swarm Size */}
         <div>
           <div className="flex justify-between items-center text-[11px] mb-1">
-            <span className="text-slate-300">Swarm Size (Pixels)</span>
-            <span className="font-extrabold text-[#00ff88]">{config.pixelCount} units</span>
+            <span className="text-slate-300">Flying Pixel commanders</span>
+            <span className="font-extrabold text-[#00ff88]">{config.pixelCount} / 10</span>
           </div>
           <input
             type="range"
-            min={3}
-            max={20}
+            min={5}
+            max={10}
             step={1}
             value={config.pixelCount}
             onChange={(e) => {

@@ -33,19 +33,23 @@ const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
     if (!group) return;
     const x = pixel.pos.x * 0.1;
     const z = pixel.pos.y * 0.1;
-    const bob = Math.sin(state.clock.getElapsedTime() * 5 + pixel.id) * 0.07;
-    positionTargetRef.current.set(x, 0.42 + bob, z);
+    // Pixel units are the airborne commanders. Their nanobot formations act
+    // on Baymax below; these larger controllers stay clear in the sky.
+    const bob = Math.sin(state.clock.getElapsedTime() * 2.4 + pixel.id) * 0.18;
+    const orbitX = Math.cos(state.clock.getElapsedTime() * 0.48 + pixel.id) * 0.35;
+    const orbitZ = Math.sin(state.clock.getElapsedTime() * 0.48 + pixel.id) * 0.35;
+    positionTargetRef.current.set(x + orbitX, 2.65 + bob, z + orbitZ);
     group.position.lerp(positionTargetRef.current, 1 - Math.exp(-14 * delta));
     const speed = Math.hypot(pixel.vel.x, pixel.vel.y);
     if (speed > 4) group.rotation.y = -Math.atan2(pixel.vel.y, pixel.vel.x) + Math.PI / 2;
-    const scale = pixel.dodgeCooldown > 0.4 ? 0.42 : pixel.inContactWithBaymax ? 0.47 : 0.39;
+    const scale = pixel.dodgeCooldown > 0.4 ? 0.86 : pixel.inContactWithBaymax ? 0.94 : 0.8;
     group.scale.setScalar(scale);
   });
 
   const core = ROLE_HEX[pixel.role] || '#64e6af';
   return <group ref={groupRef}>
     <primitive object={model} />
-    <mesh position={[0, 0.42, 0]}><sphereGeometry args={[0.16, 16, 16]} /><meshStandardMaterial color={core} emissive={core} emissiveIntensity={2.4} /></mesh>
+    <mesh position={[0, 0.42, 0]}><sphereGeometry args={[0.2, 16, 16]} /><meshStandardMaterial color={core} emissive={core} emissiveIntensity={2.4} /></mesh>
   </group>;
 };
 

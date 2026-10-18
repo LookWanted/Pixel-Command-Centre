@@ -6,8 +6,8 @@ import { SimWorld, EpisodeResult } from '../sim/types';
 import { Arena } from './Arena';
 import { BaymaxModel } from './BaymaxModel';
 import { PixelSwarm } from './PixelSwarm';
+import { NanobotSwarm } from './NanobotSwarm';
 import { ScanCone } from './ScanCone';
-import { TetherBeams } from './TetherBeams';
 import { CameraRig } from './CameraRig';
 import { sound } from '../utils/audio';
 
@@ -21,6 +21,8 @@ export const SimScene: React.FC = () => {
     addEvents,
     addEpisodeResult,
     cinematicCamera,
+    baymaxPov,
+    cameraZoom,
     triggerAction,
     setTriggerAction,
     manualPilotActive,
@@ -277,6 +279,8 @@ export const SimScene: React.FC = () => {
       <CameraRig
         baymaxState={world.baymax}
         cinematic={cinematicCamera}
+        baymaxPov={baymaxPov}
+        zoom={cameraZoom}
         extractionProgress={world.extractionProgress}
       />
       <Arena timeElapsed={world.timeElapsed} arenaRadius={36} />
@@ -294,10 +298,9 @@ export const SimScene: React.FC = () => {
         pixels={world.pixels}
         hiveKnowledge={world.hiveKnowledge}
       />
-      <TetherBeams
-        pixels={world.pixels}
-        baymaxState={world.baymax}
-        extractionProgress={world.extractionProgress}
+      <NanobotSwarm
+        commanders={world.pixels}
+        baymax={world.baymax}
       />
     </>
   );

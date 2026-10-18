@@ -7,12 +7,16 @@ import { BaymaxState } from '../sim/types';
 interface CameraRigProps {
   baymaxState: BaymaxState;
   cinematic: boolean;
+  baymaxPov: boolean;
+  zoom: number;
   extractionProgress: number;
 }
 
 export const CameraRig: React.FC<CameraRigProps> = ({
   baymaxState,
   cinematic,
+  baymaxPov,
+  zoom,
   extractionProgress
 }) => {
   const { camera } = useThree();
@@ -42,6 +46,23 @@ export const CameraRig: React.FC<CameraRigProps> = ({
     if (controlsRef.current) {
       const bx = baymaxState.pos.x * 0.1;
       const bz = baymaxState.pos.y * 0.1;
+      const forwardX = Math.cos(baymaxState.angle);
+      const forwardZ = Math.sin(baymaxState.angle);
+
+      if (baymaxPov) {
+        // A first-person camera placed at Baymax's eye line and directed along
+        // his real simulation heading.
+        const eyeX = bx + forwardX * 0.18;
+        const eyeZ = bz + forwardZ * 0.18;
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, eyeX, delta * 7);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, 3.85, delta * 7);
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, eyeZ, delta * 7);
+        controlsRef.current.target.x = THREE.MathUtils.lerp(controlsRef.current.target.x, bx + forwardX * 10, delta * 7);
+        controlsRef.current.target.y = THREE.MathUtils.lerp(controlsRef.current.target.y, 2.8, delta * 7);
+        controlsRef.current.target.z = THREE.MathUtils.lerp(controlsRef.current.target.z, bz + forwardZ * 10, delta * 7);
+        controlsRef.current.update();
+        return;
+      }
 
       // Gentle idle drift
       const time = state.clock.getElapsedTime();
@@ -54,8 +75,8 @@ export const CameraRig: React.FC<CameraRigProps> = ({
       if (cinematic) {
         // Follow-cam mode active: tracks Baymax dynamics
         const targetCamX = bx * 0.5 + driftX;
-        const targetCamY = (15.5 + Math.sin(time * 0.1) * 0.6) * zoomFactor;
-        const targetCamZ = bz * 0.5 + 19.5 * zoomFactor + driftZ;
+        const targetCamY = (15.5 + Math.sin(time * 0.1) * 0.6) * zoomFactor * zoom;
+        const targetCamZ = bz * 0.5 + 19.5 * zoomFactor * zoom + driftZ;
 
         camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetCamX + shakeX, delta * 3.0);
         camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCamY + shakeY, delta * 3.0);
@@ -68,8 +89,8 @@ export const CameraRig: React.FC<CameraRigProps> = ({
       } else {
         // Fixed arena overview mode
         const targetCamX = driftX;
-        const targetCamY = 16.5 * zoomFactor;
-        const targetCamZ = 21.0 * zoomFactor + driftZ;
+        const targetCamY = 16.5 * zoomFactor * zoom;
+        const targetCamZ = 21.0 * zoomFactor * zoom + driftZ;
 
         camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetCamX + shakeX, delta * 2.5);
         camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCamY + shakeY, delta * 2.5);
@@ -91,6 +112,8 @@ export const CameraRig: React.FC<CameraRigProps> = ({
     <OrbitControls
       ref={controlsRef}
       enableDamping
+      enableRotate={!baymaxPov}
+      enableZoom={!baymaxPov}
       dampingFactor={0.06}
       maxPolarAngle={Math.PI / 2 - 0.05} // don't go below ground
       minDistance={10}

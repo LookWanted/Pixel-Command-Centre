@@ -73,10 +73,9 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     // This only runs while he is travelling, never while attacking or restored.
     const speed = Math.hypot(baymaxState.vel.x, baymaxState.vel.y);
     const isAttacking = baymaxState.state === 'lunge_prep' || baymaxState.state === 'lunging';
-    const isMoving = speed > 0.12;
-    const walkAmount = !isPacified && !isAttacking && isMoving
-      ? THREE.MathUtils.clamp(0.55 + speed / 6, 0.55, 1)
-      : 0;
+    // Baymax glides through the arena; only his Pixel commanders and the
+    // nanobot swarm animate motion. Keep his legs at rest between attacks.
+    const walkAmount = 0;
     const stride = time * (4.8 + speed * 0.28);
     const walkBob = Math.abs(Math.sin(stride)) * 0.075 * walkAmount;
     const walkSway = Math.sin(stride * 0.5) * 0.045 * walkAmount;

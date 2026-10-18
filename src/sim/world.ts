@@ -5,14 +5,14 @@ import { createBaymax, updateBaymax } from './baymax';
 import { assignInitialRoles, checkRoleContact, handleBackupPromotions } from './roles';
 
 export const DEFAULT_CONFIG: SimConfig = {
-  pixelCount: 20,
+  pixelCount: 10,
   pixelSpeed: 115,
   baymaxSpeed: 68,
   retargetInterval: 2.0,
   lungeInterval: 3.6,
   lungeReach: 155,
   learnRate: 0.065,
-  extractionTime: 12.0,
+  extractionTime: 26.0,
   hiveMode: true,
   missionMode: 'extract',
   simSpeed: 1,
@@ -204,14 +204,14 @@ export function step(world: SimWorld, dt: number): SimWorld {
       };
       world.events.push(event);
       world.recentEvents.push(event);
-    } else if (world.timeElapsed >= 90.0) {
+    } else if (world.timeElapsed >= 180.0) {
       world.status = 'failed';
-      world.statusReason = 'Mission timeout: Portal collapse in 90s.';
+      world.statusReason = 'Mission timeout: Portal collapse in 180s.';
       const event = {
         id: `timeout_${world.timeElapsed}`,
         time: world.timeElapsed,
         kind: 'mission_failed' as const,
-        message: `[MISSION FAILED] Dimensional portal closed. Swarm trapped.`,
+        message: `[MISSION FAILED] Dimensional portal closed after 180 seconds.`,
         data: {}
       };
       world.events.push(event);

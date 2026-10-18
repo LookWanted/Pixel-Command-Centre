@@ -78,6 +78,10 @@ interface AppState {
   setQuality: (q: 'high' | 'low') => void;
   cinematicCamera: boolean;
   setCinematicCamera: (val: boolean) => void;
+  baymaxPov: boolean;
+  setBaymaxPov: (val: boolean) => void;
+  cameraZoom: number;
+  setCameraZoom: (zoom: number) => void;
   audioMuted: boolean;
   setAudioMuted: (muted: boolean) => void;
   soundtrackPlaying: boolean;
@@ -212,6 +216,10 @@ export const useStore = create<AppState>((set, get) => ({
 
   cinematicCamera: true,
   setCinematicCamera: (cinematicCamera) => set({ cinematicCamera }),
+  baymaxPov: false,
+  setBaymaxPov: (baymaxPov) => set({ baymaxPov }),
+  cameraZoom: 1,
+  setCameraZoom: (cameraZoom) => set({ cameraZoom: Math.min(1.55, Math.max(0.62, cameraZoom)) }),
 
   audioMuted: false,
   setAudioMuted: (muted) => {

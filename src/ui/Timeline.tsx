@@ -6,7 +6,7 @@ import { SimpleRoster } from './SimpleRoster';
 export const Timeline: React.FC = () => {
   const { snapshot, isPaused, togglePause, requestReset, config, updateConfig } = useStore();
 
-  const maxTime = 90;
+  const maxTime = 180;
   const current = Math.min(maxTime, snapshot.timeElapsed);
   const progressPct = (current / maxTime) * 100;
 
