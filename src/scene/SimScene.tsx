@@ -249,6 +249,16 @@ export const SimScene: React.FC = () => {
         status: world.status,
         statusReason: world.statusReason,
         hiveKnowledge: world.hiveKnowledge,
+        // Live learning signal, not cumulative memory: it rises only when
+        // surviving commanders are observing/coordinating in the encounter.
+        hiveSignal: Math.min(1, Math.max(0,
+          world.hiveKnowledge * 0.42 +
+          (aliveList.length / Math.max(1, world.pixels.length)) * 0.22 +
+          (world.baymax.state === 'lunge_prep' || world.baymax.state === 'lunging' ? 0.24 : 0) +
+          (world.baymax.grippedCount / 3) * 0.12 +
+          world.extractionProgress * 0.14 +
+          Math.sin(world.timeElapsed * 1.7) * 0.035
+        )),
         extractionProgress: world.extractionProgress,
         aliveCount: aliveList.length,
         totalPixels: world.pixels.length,

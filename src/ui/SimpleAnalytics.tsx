@@ -6,14 +6,14 @@ export const SimpleAnalytics: React.FC = () => {
   const { snapshot, eventLog, hiveLearningHistory } = useStore();
   const pct = Math.round(snapshot.extractionProgress * 100);
   const signalPoints = useMemo(() => {
-    const values = hiveLearningHistory.length ? hiveLearningHistory : [{ time: 0, value: snapshot.hiveKnowledge }];
+    const values = hiveLearningHistory.length ? hiveLearningHistory : [{ time: 0, value: snapshot.hiveSignal }];
     if (values.length === 1) return `0,76 100,${76 - values[0].value * 64}`;
     return values.map((sample, index) => {
       const x = (index / (values.length - 1)) * 100;
       const y = 76 - sample.value * 64;
       return `${x},${y}`;
     }).join(' ');
-  }, [hiveLearningHistory, snapshot.hiveKnowledge]);
+  }, [hiveLearningHistory, snapshot.hiveSignal]);
   return <div className="simple-side status-card">
     <section className="simple-panel">
       <p className="side-eyebrow">Scenario status</p>
@@ -23,9 +23,9 @@ export const SimpleAnalytics: React.FC = () => {
       </div>
       <div className="progress-label"><span>Chip removal</span><b>{pct}%</b></div><div className="thin-progress"><i style={{ width: `${pct}%` }} /></div>
     </section>
-    <section className="simple-panel technical-chart" aria-label="Hive learning signal chart">
-      <div className="chart-heading"><p className="side-eyebrow">Hive signal</p><span>{Math.round(snapshot.hiveKnowledge * 100)}%</span></div>
-      <svg viewBox="0 0 100 80" preserveAspectRatio="none" role="img" aria-label="Learning signal over time">
+    <section className="simple-panel technical-chart" aria-label="Hive learning pulse chart">
+      <div className="chart-heading"><p className="side-eyebrow">Hive learning pulse</p><span>{Math.round(snapshot.hiveSignal * 100)}%</span></div>
+      <svg viewBox="0 0 100 80" preserveAspectRatio="none" role="img" aria-label="Live learning signal over time">
         <path className="chart-grid" d="M0 20H100M0 40H100M0 60H100M25 0V80M50 0V80M75 0V80" />
         <polyline className="chart-line" points={signalPoints} />
       </svg>

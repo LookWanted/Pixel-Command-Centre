@@ -8,6 +8,7 @@ export interface UIWorldSnapshot {
   status: 'running' | 'success' | 'failed';
   statusReason: string;
   hiveKnowledge: number;
+  hiveSignal: number;
   extractionProgress: number;
   aliveCount: number;
   totalPixels: number;
@@ -137,6 +138,7 @@ export const useStore = create<AppState>((set, get) => ({
     status: 'running',
     statusReason: '',
     hiveKnowledge: 0,
+    hiveSignal: 0,
     extractionProgress: 0,
     aliveCount: DEFAULT_CONFIG.pixelCount,
     totalPixels: DEFAULT_CONFIG.pixelCount,
@@ -156,7 +158,7 @@ export const useStore = create<AppState>((set, get) => ({
     return {
       snapshot: snap,
       hiveLearningHistory: shouldRecord
-        ? [...(snap.timeElapsed < (previous?.time ?? 0) ? [] : state.hiveLearningHistory), { time: snap.timeElapsed, value: snap.hiveKnowledge }].slice(-60)
+        ? [...(snap.timeElapsed < (previous?.time ?? 0) ? [] : state.hiveLearningHistory), { time: snap.timeElapsed, value: snap.hiveSignal }].slice(-60)
         : state.hiveLearningHistory
     };
   }),
