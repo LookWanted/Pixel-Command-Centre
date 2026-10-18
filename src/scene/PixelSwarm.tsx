@@ -13,12 +13,16 @@ interface PixelSwarmProps {
 const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
   const { scene } = useGLTF('/assets/models/pixel-textured.glb');
   const groupRef = useRef<THREE.Group>(null);
+  const positionTargetRef = useRef(new THREE.Vector3());
   const model = useMemo(() => {
     const copy = scene.clone(true);
     copy.traverse((node) => {
       if ((node as THREE.Mesh).isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
+        // Twenty animated bots casting shadows turns each frame into a costly
+        // second scene render. Baymax keeps the cinematic shadow; bot cores
+        // provide their readable presence through emissive light instead.
+        node.castShadow = false;
+        node.receiveShadow = false;
       }
     });
     return copy;
@@ -30,7 +34,8 @@ const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
     const x = pixel.pos.x * 0.1;
     const z = pixel.pos.y * 0.1;
     const bob = Math.sin(state.clock.getElapsedTime() * 5 + pixel.id) * 0.07;
-    group.position.lerp(new THREE.Vector3(x, 0.42 + bob, z), Math.min(1, delta * 14));
+    positionTargetRef.current.set(x, 0.42 + bob, z);
+    group.position.lerp(positionTargetRef.current, 1 - Math.exp(-14 * delta));
     const speed = Math.hypot(pixel.vel.x, pixel.vel.y);
     if (speed > 4) group.rotation.y = -Math.atan2(pixel.vel.y, pixel.vel.x) + Math.PI / 2;
     const scale = pixel.dodgeCooldown > 0.4 ? 0.42 : pixel.inContactWithBaymax ? 0.47 : 0.39;
@@ -41,7 +46,6 @@ const PixelBotAsset: React.FC<{ pixel: PixelState }> = ({ pixel }) => {
   return <group ref={groupRef}>
     <primitive object={model} />
     <mesh position={[0, 0.42, 0]}><sphereGeometry args={[0.16, 16, 16]} /><meshStandardMaterial color={core} emissive={core} emissiveIntensity={2.4} /></mesh>
-    <pointLight color={core} intensity={0.7} distance={2.6} />
   </group>;
 };
 

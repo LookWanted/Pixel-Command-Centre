@@ -228,7 +228,7 @@ export const Arena: React.FC<ArenaProps> = ({
         intensity={2.2}
         color="#FFF5EA"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[512, 512]}
         shadow-camera-near={1}
         shadow-camera-far={60}
         shadow-camera-left={-20}

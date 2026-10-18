@@ -59,7 +59,8 @@ export function App() {
           <div className="absolute inset-0 z-0">
             <Canvas
               shadows={quality === 'high'}
-              gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
+              dpr={[1, 1.5]}
+              gl={{ antialias: true, powerPreference: 'high-performance' }}
               camera={{ position: [0, 15, 20], fov: 42 }}
             >
               <color attach="background" args={['#101314']} />

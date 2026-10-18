@@ -23,6 +23,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   const rightArmRef = useRef<THREE.Group>(null);
   const chipRef = useRef<THREE.Mesh>(null);
   const chipLightRef = useRef<THREE.PointLight>(null);
+  const scaleTargetRef = useRef(new THREE.Vector3(1, 1, 1));
   const [cadReady, setCadReady] = useState(false);
   const handleCadReady = useCallback(() => setCadReady(true), []);
 
@@ -56,35 +57,38 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     if (!groupRef.current) return;
     const time = state.clock.getElapsedTime();
 
-    // Smooth movement interpolation
-    groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, delta * 15);
-    groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, targetZ, delta * 15);
+    // Frame-rate-independent easing prevents position and pose pops under load.
+    const movementBlend = 1 - Math.exp(-12 * delta);
+    const poseBlend = 1 - Math.exp(-10 * delta);
+    groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, movementBlend);
+    groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, targetZ, movementBlend);
 
     // Rotation facing with smooth interpolation
     const targetRotY = -baymaxState.angle + Math.PI / 2;
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, delta * 10);
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, movementBlend);
 
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
     if (baymaxState.state === 'lunge_prep') {
-      // Windup crouch pose: squashes down, leans back slightly
-      groupRef.current.scale.set(1.18, 0.82, 1.18);
+      // Windup lowers Baymax before the strike.
+      scaleTargetRef.current.set(1.1, 0.9, 1.1);
       if (bodyRef.current) bodyRef.current.rotation.x = -0.22;
       if (leftArmRef.current) leftArmRef.current.rotation.x = 0.4;
       if (rightArmRef.current) rightArmRef.current.rotation.x = 0.4;
     } else if (baymaxState.state === 'lunging') {
-      // Kinetic dash stretch pose: surges forward
-      groupRef.current.scale.set(0.88, 1.15, 0.88);
+      // The attack stays low and wide; roaming Baymax is visibly taller.
+      scaleTargetRef.current.set(1.18, 0.78, 1.18);
       if (bodyRef.current) bodyRef.current.rotation.x = 0.38;
       if (leftArmRef.current) leftArmRef.current.rotation.x = -0.5;
       if (rightArmRef.current) rightArmRef.current.rotation.x = -0.5;
     } else {
       // Gentle rhythmic vinyl breathing
       const breath = Math.sin(time * 2.2) * 0.025;
-      groupRef.current.scale.set(1 + breath * 0.4, 1 + breath, 1 + breath * 0.4);
+      scaleTargetRef.current.set(1 + breath * 0.4, 1 + breath, 1 + breath * 0.4);
       if (bodyRef.current) {
         bodyRef.current.rotation.x = THREE.MathUtils.lerp(bodyRef.current.rotation.x, 0, delta * 8);
       }
     }
+    groupRef.current.scale.lerp(scaleTargetRef.current, poseBlend);
 
     // 2. Arms Dynamics: Pinning struggle or iconic friendly wave
     if (leftArmRef.current && rightArmRef.current) {
