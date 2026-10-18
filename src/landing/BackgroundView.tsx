@@ -58,6 +58,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
   const [scrubAngle, setScrubAngle] = useState(0.2);
   const videoRef = useRef<HTMLVideoElement>(null);
   const soundtrackRef = useRef<HTMLAudioElement>(null);
+  const soundtrackStartedRef = useRef(false);
 
   // Mouse controls only the 3D Pixel model. The cinematic remains a continuous loop.
   useEffect(() => {
@@ -89,23 +90,41 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
     video.play().catch(() => undefined);
   }, []);
 
-  // The soundtrack is intentionally scoped to the landing experience. Browsers
-  // may require one gesture before allowing audible playback, so retry once on
-  // the first input without adding another control to the minimal header.
+  // The soundtrack is intentionally scoped to the landing experience. Audible
+  // media needs a user gesture in most browsers; keeping the start state in a
+  // ref also avoids duplicate play calls from React's development StrictMode.
   useEffect(() => {
     const soundtrack = soundtrackRef.current;
     if (!soundtrack) return;
 
     soundtrack.volume = 0.34;
-    const startSoundtrack = () => soundtrack.play().catch(() => undefined);
-    startSoundtrack();
+    soundtrack.loop = true;
 
-    window.addEventListener('pointerdown', startSoundtrack, { once: true });
+    let disposed = false;
+    const startSoundtrack = () => {
+      soundtrackStartedRef.current = true;
+      if (disposed || !soundtrack.paused) return;
+      soundtrack.play().catch(() => undefined);
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        soundtrack.pause();
+      } else if (soundtrackStartedRef.current) {
+        soundtrack.play().catch(() => undefined);
+      }
+    };
+
+    window.addEventListener('pointerdown', startSoundtrack, { once: true, passive: true });
     window.addEventListener('keydown', startSoundtrack, { once: true });
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
+      disposed = true;
       window.removeEventListener('pointerdown', startSoundtrack);
       window.removeEventListener('keydown', startSoundtrack);
+      document.removeEventListener('visibilitychange', handleVisibility);
       soundtrack.pause();
+      soundtrack.currentTime = 0;
+      soundtrackStartedRef.current = false;
     };
   }, []);
 
@@ -127,7 +146,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
           style={{ objectPosition: 'center center', transform: 'scale(1.34)' }}
         />
       </div>
-      <audio ref={soundtrackRef} src="/assets/portal_soundtrack.mp3" autoPlay loop preload="auto" />
+      <audio ref={soundtrackRef} src="/assets/portal_soundtrack.mp3" loop preload="auto" />
 
       <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
