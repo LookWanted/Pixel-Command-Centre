@@ -91,15 +91,17 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
     const walkSway = Math.sin(stride * 0.5) * 0.045 * walkAmount;
     const walkLean = Math.cos(stride) * 0.028 * walkAmount;
     groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, walkBob + launch * 18, poseBlend);
-    groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway, poseBlend);
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean + collapse * 1.34, poseBlend);
+    groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, walkSway + collapse * 1.1, poseBlend);
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, walkLean + collapse * 0.28, poseBlend);
     walkMotionRef.current.stride = stride;
     walkMotionRef.current.amount = walkAmount;
 
     // 1. Idle Breathing & Combat Lunge Windup / Dash Animation
     if (isDefeated) {
-      scaleTargetRef.current.set(1.08, 0.58, 1.18);
-      if (bodyRef.current) bodyRef.current.rotation.x = 0.32;
+      // Retain Baymax's recognisable vinyl silhouette instead of squashing it
+      // into a white mound when he falls.
+      scaleTargetRef.current.set(1, 0.96, 1);
+      if (bodyRef.current) bodyRef.current.rotation.x = 0.14;
     } else if (baymaxState.state === 'lunge_prep') {
       // Windup lowers Baymax before the strike.
       scaleTargetRef.current.set(1, 0.92, 1);

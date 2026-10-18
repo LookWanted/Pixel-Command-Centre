@@ -47,19 +47,19 @@ function formationMatrix(
   const bx = baymax.pos.x * 0.1;
   const bz = baymax.pos.y * 0.1;
   if (isCoveringBaymax) {
-    // Defeat state: every small nanobot settles into a dense, layered shell
-    // over Baymax rather than continuing its normal attack choreography.
-    const layer = Math.floor(index / 48);
-    const ringIndex = index % 48;
-    const angle = (ringIndex / 48) * Math.PI * 2 + layer * 0.42;
-    const radius = 0.65 + (ringIndex % 6) * 0.13 + layer * 0.18;
+    // Pin him with a low, dark ring instead of burying the white model under a
+    // high pile that reads as snow rather than a defeated Baymax.
+    const layer = Math.floor(index / 70);
+    const ringIndex = index % 70;
+    const angle = (ringIndex / 70) * Math.PI * 2 + layer * 0.42;
+    const radius = 1.05 + (ringIndex % 7) * 0.12 + layer * 0.24;
     dummy.position.set(
       bx + Math.cos(angle) * radius,
-      0.06 + layer * 0.52,
+      0.045 + Math.min(layer, 2) * 0.16,
       bz + Math.sin(angle) * radius
     );
-    dummy.rotation.set(0.22 * Math.sin(time * 2 + index), -angle, 0.12 * Math.cos(time * 1.7 + index));
-    dummy.scale.setScalar(0.009);
+    dummy.rotation.set(0.1 * Math.sin(time * 2 + index), -angle, 0.08 * Math.cos(time * 1.7 + index));
+    dummy.scale.setScalar(0.0075);
     dummy.updateMatrix();
     return;
   }
