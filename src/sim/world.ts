@@ -206,21 +206,10 @@ export function step(world: SimWorld, dt: number): SimWorld {
       };
       world.events.push(event);
       world.recentEvents.push(event);
-    } else if (world.timeElapsed >= 180.0) {
-      world.status = 'failed';
-      world.statusReason = 'Mission timeout: Portal collapse in 180s.';
-      const event = {
-        id: `timeout_${world.timeElapsed}`,
-        time: world.timeElapsed,
-        kind: 'mission_failed' as const,
-        message: `[MISSION FAILED] Dimensional portal closed after 180 seconds.`,
-        data: {}
-      };
-      world.events.push(event);
-      world.recentEvents.push(event);
     }
   } else {
-    // Decoy mode: survive 45s
+    // Decoy mode has no clock-based success condition: it remains a live
+    // training run until the operator resets it or the squad is eliminated.
     if (alivePixels.length === 0) {
       world.status = 'failed';
       world.statusReason = 'All swarm decoys eliminated.';
@@ -229,18 +218,6 @@ export function step(world: SimWorld, dt: number): SimWorld {
         time: world.timeElapsed,
         kind: 'mission_failed' as const,
         message: `[MISSION FAILED] All decoy units wiped out.`,
-        data: {}
-      };
-      world.events.push(event);
-      world.recentEvents.push(event);
-    } else if (world.timeElapsed >= 45.0) {
-      world.status = 'success';
-      world.statusReason = 'Decoy evasion survival objective met (45s sustained).';
-      const event = {
-        id: `decoy_success_${world.timeElapsed}`,
-        time: world.timeElapsed,
-        kind: 'mission_success' as const,
-        message: `[OBJECTIVE MET] Decoy squad sustained evasion for 45s! Extraction window ready.`,
         data: {}
       };
       world.events.push(event);
@@ -277,7 +254,7 @@ export function runEpisode(
     episodeNumber: episodeNum,
     hiveMode: config.hiveMode,
     success: sim.status === 'success',
-    timeElapsed: Math.min(180, Math.round(sim.timeElapsed * 10) / 10),
+    timeElapsed: Math.round(sim.timeElapsed * 10) / 10,
     survivors: aliveCount,
     extractionProgress: Math.round(sim.extractionProgress * 100),
     hiveKnowledge: Math.round(sim.hiveKnowledge * 100),
