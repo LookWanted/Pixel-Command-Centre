@@ -17,7 +17,7 @@ export const DEFAULT_CONFIG: SimConfig = {
   hiveMode: true,
   missionMode: 'extract',
   simSpeed: 1,
-  arenaRadius: 360
+  arenaRadius: 500
 };
 
 export function createWorld(
@@ -72,7 +72,7 @@ export function resetWorld(
 /**
  * Deterministic simulation step (called with fixed dt, e.g. 1/60s)
  */
-export function step(world: SimWorld, dt: number): SimWorld {
+export function step(world: SimWorld, dt: number, manualPilot = false): SimWorld {
   if (world.status !== 'running') {
     return world;
   }
@@ -84,15 +84,11 @@ export function step(world: SimWorld, dt: number): SimWorld {
   world.timeElapsed += dt;
 
   // 1. Update Baymax state machine & combat dash
-  const baymaxResult = updateBaymax(
-    world.baymax,
-    world.pixels,
-    world.config,
-    dt,
-    world.timeElapsed,
-    rng,
-    world.hiveKnowledge
-  );
+  // In manual mode the pilot owns every movement decision. We still update
+  // Pixels and the swarm, but never run Baymax's autonomous pursuit/lunge AI.
+  const baymaxResult = manualPilot
+    ? { destroyedPixelIds: [], dodgedPixelIds: [], gripsBroken: false, events: [], newSharedKnowledge: world.hiveKnowledge }
+    : updateBaymax(world.baymax, world.pixels, world.config, dt, world.timeElapsed, rng, world.hiveKnowledge);
 
   world.hiveKnowledge = baymaxResult.newSharedKnowledge;
   if (baymaxResult.events.length > 0) {
@@ -164,20 +160,22 @@ export function step(world: SimWorld, dt: number): SimWorld {
 
   // The nanobots attack in short waves. Formation time is only a small breather,
   // not a full heal: a healthy Baymax has to keep moving or the swarm can win.
-  const swarmPhase = world.timeElapsed % 18;
-  const structureWindow = swarmPhase >= 3 && swarmPhase < 14;
+  const swarmPhase = world.timeElapsed % 12;
+  const structureWindow = swarmPhase >= 2 && swarmPhase < 6;
   if (alivePixels.length > 0) {
     if (structureWindow) {
       // While assembling, the swarm is out of striking range. Recovery is
       // deliberately modest so it cannot erase a whole attack wave.
-      world.baymax.health = Math.min(100, world.baymax.health + 0.35 * dt);
+      world.baymax.health = Math.min(100, world.baymax.health + 0.2 * dt);
     } else {
       // At more than 10% health the swarm commits to an aggressive takedown.
       // Below that, it falls back to a normal attack pattern: still dangerous,
       // but leaving a narrow chance for Baymax to finish the commander.
       // A full swarm pass must feel consequential: above the critical-health
       // threshold, Baymax loses ground quickly if he does not remove Pixel.
-      const attackDamage = world.baymax.health > 10 ? 7.4 : 2.6;
+      const attackDamage = manualPilot
+        ? (world.baymax.health > 10 ? 17 : 7.5)
+        : (world.baymax.health > 10 ? 7.4 : 2.6);
       world.baymax.health = Math.max(0, world.baymax.health - attackDamage * dt);
     }
   }

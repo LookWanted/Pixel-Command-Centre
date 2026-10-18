@@ -146,7 +146,7 @@ export const SimScene: React.FC = () => {
       accumulatorRef.current += clampedDelta;
 
       while (accumulatorRef.current >= fixedDt) {
-        step(world, fixedDt);
+        step(world, fixedDt, manualPilotActive);
 
         // Manual instructor override: WASD drives Baymax directly.
         if (manualPilotActive) {
@@ -157,7 +157,7 @@ export const SimScene: React.FC = () => {
           if (manualInput.right) mx += 1;
           if (mx !== 0 || my !== 0) {
             const len = Math.hypot(mx, my);
-            const spd = world.config.baymaxSpeed * (manualInput.boost ? 1.75 : 1.05);
+            const spd = world.config.baymaxSpeed * (manualInput.boost ? 2.15 : 1.35);
             world.baymax.pos.x += (mx / len) * spd * fixedDt;
             world.baymax.pos.y += (my / len) * spd * fixedDt;
             world.baymax.vel.x = (mx / len) * spd;
@@ -165,7 +165,12 @@ export const SimScene: React.FC = () => {
             world.baymax.angle = Math.atan2(my, mx);
             world.baymax.state = 'scan';
             const distance = Math.hypot(world.baymax.pos.x, world.baymax.pos.y);
-            if (distance > 330) { world.baymax.pos.x = world.baymax.pos.x / distance * 330; world.baymax.pos.y = world.baymax.pos.y / distance * 330; }
+            const limit = world.config.arenaRadius - 30;
+            if (distance > limit) { world.baymax.pos.x = world.baymax.pos.x / distance * limit; world.baymax.pos.y = world.baymax.pos.y / distance * limit; }
+          } else {
+            world.baymax.vel.x = 0;
+            world.baymax.vel.y = 0;
+            world.baymax.state = 'scan';
           }
         }
 
@@ -295,7 +300,7 @@ export const SimScene: React.FC = () => {
         zoom={cameraZoom}
         extractionProgress={world.extractionProgress}
       />
-      <Arena timeElapsed={world.timeElapsed} arenaRadius={36} />
+      <Arena timeElapsed={world.timeElapsed} arenaRadius={world.config.arenaRadius * 0.1} />
       <BaymaxModel
         baymaxState={world.baymax}
         isPacified={isPacified}

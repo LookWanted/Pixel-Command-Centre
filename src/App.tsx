@@ -12,6 +12,7 @@ import { CinematicBriefingModal } from './ui/CinematicBriefingModal';
 import { CinematicTheaterModal } from './ui/CinematicTheaterModal';
 import { Timeline } from './ui/Timeline';
 import { LandingPage } from './landing/LandingPage';
+import { MissionCompleteOverlay } from './ui/MissionCompleteOverlay';
 
 export function App() {
   const { 
@@ -70,6 +71,7 @@ export function App() {
             </Canvas>
           </div>
           <GamingHUDOverlay />
+          <MissionCompleteOverlay />
         </main>
 
         <aside className="dashboard-intel h-full overflow-y-auto z-20">

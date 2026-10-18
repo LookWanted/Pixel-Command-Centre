@@ -10,7 +10,7 @@ type CadMesh = {
 type CadResult = { success: boolean; meshes: CadMesh[] };
 
 let importerPromise: Promise<void> | null = null;
-const BOT_COUNT = 240;
+const BOT_COUNT = 420;
 
 function loadCadImporter() {
   const cadWindow = window as unknown as { occtimportjs?: () => Promise<{ ReadStepFile: (data: Uint8Array, params: unknown) => CadResult }> };
@@ -63,24 +63,23 @@ function formationMatrix(
     dummy.updateMatrix();
     return;
   }
-  // A longer rhythm gives each structure time to read as a physical object:
-  // short ground scramble, deliberate build, then a sustained hold.
-  const cycle = Math.floor(time / 18);
-  const cycleTime = time % 18;
-  const structure = Math.floor(Math.abs(Math.sin((cycle + 1) * 91.73)) * 3) % 3;
-  const formationStrength = cycleTime < 3
-    ? THREE.MathUtils.smootherstep(cycleTime / 3, 0, 1)
-    : cycleTime < 14
+  // Short, deliberate structures leave most of the encounter active.
+  const cycle = Math.floor(time / 12);
+  const cycleTime = time % 12;
+  const structure = Math.floor(Math.abs(Math.sin((cycle + 1) * 91.73)) * 5) % 5;
+  const formationStrength = cycleTime < 2
+    ? THREE.MathUtils.smootherstep(cycleTime / 2, 0, 1)
+    : cycleTime < 6
       ? 1
-      : cycleTime < 16
-        ? 1 - THREE.MathUtils.smootherstep((cycleTime - 14) / 2, 0, 1)
+      : cycleTime < 8
+        ? 1 - THREE.MathUtils.smootherstep((cycleTime - 6) / 2, 0, 1)
         : 0;
 
   // Nanobots stay on the arena floor. They scatter and surge around Baymax,
   // then physically stack into a structure instead of flying like commanders.
   const seed = index * 1.618;
   const attackAngle = time * (1.1 + (index % 7) * 0.13) + seed;
-  const attackRadius = 3.6 + ((Math.sin(time * 1.9 + seed) + 1) * 1.7) + (index % 8) * 0.35;
+  const attackRadius = 3.1 + ((Math.sin(time * 2.55 + seed) + 1) * 2.3) + (index % 13) * 0.44;
   const attackX = bx + Math.cos(attackAngle) * attackRadius + Math.sin(time * 4.4 + seed) * 0.3;
   const attackZ = bz + Math.sin(attackAngle * 1.27) * attackRadius + Math.cos(time * 3.8 + seed) * 0.3;
   const attackY = 0.035;
@@ -88,39 +87,54 @@ function formationMatrix(
   // Structures are deliberately built away from Baymax, making the swarm's
   // regrouping obvious and giving the health system a visible respite.
   const regroupAngle = cycle * 2.399 + Math.PI * 0.35;
-  const regroupDistance = 8.4;
+  const regroupDistance = 10.8;
   const regroupX = bx + Math.cos(regroupAngle) * regroupDistance;
   const regroupZ = bz + Math.sin(regroupAngle) * regroupDistance;
   let fx = regroupX;
   let fy = 0.035;
   let fz = regroupZ;
   if (structure === 0) {
-    // Cube: a dense 6 × 5 × 6 ground lattice.
-    const gx = (index % 6) - 2.5;
-    const gy = Math.floor(index / 6) % 5;
-    const gz = Math.floor(index / 30) - 2.5;
-    fx += gx * 0.42; fy += gy * 0.4; fz += gz * 0.42;
+    // Cube: a large 7 × 6 × 7 ground lattice.
+    const gx = (index % 7) - 3;
+    const gy = Math.floor(index / 7) % 6;
+    const gz = Math.floor(index / 42) - 4.5;
+    fx += gx * 0.38; fy += gy * 0.34; fz += gz * 0.38;
   } else if (structure === 1) {
     // Sphere: an unmistakable, ground-resting Fibonacci shell.
     const ratio = (index + 0.5) / BOT_COUNT;
     const polar = Math.acos(1 - ratio * 2);
     const azimuth = Math.PI * (3 - Math.sqrt(5)) * index;
-    const radius = 1.9;
+    const radius = 2.45;
     fx += Math.cos(azimuth) * Math.sin(polar) * radius;
     fy += radius + Math.cos(polar) * radius;
     fz += Math.sin(azimuth) * Math.sin(polar) * radius;
-  } else {
-    // Hexagon: eight tightly packed, six-sided rings away from Baymax.
-    const ring = Math.floor(index / 20);
-    const point = index % 20;
+  } else if (structure === 2) {
+    // Hexagon: layered, six-sided rings.
+    const ring = Math.floor(index / 24);
+    const point = index % 24;
     const side = Math.floor(point / 4);
     const sideT = (point % 4) / 4;
     const a = side * Math.PI / 3;
     const b = (side + 1) * Math.PI / 3;
-    const radius = 2.0;
+    const radius = 2.35;
     fx += (Math.cos(a) * (1 - sideT) + Math.cos(b) * sideT) * radius;
     fz += (Math.sin(a) * (1 - sideT) + Math.sin(b) * sideT) * radius;
-    fy += ring * 0.38;
+    fy += ring * 0.28;
+  } else if (structure === 3) {
+    // Spiral tower: an unmistakable vertical build.
+    const level = Math.floor(index / 28);
+    const angle = index * 2.399;
+    const radius = 2.25 - level * 0.11;
+    fx += Math.cos(angle) * radius;
+    fz += Math.sin(angle) * radius;
+    fy += level * 0.29;
+  } else {
+    // Arch: two physical supports and a connected overhead curve.
+    const t = (index % 70) / 69;
+    const side = Math.floor(index / 70) % 2 === 0 ? -1 : 1;
+    fx += side * (1.2 + t * 1.25);
+    fz += (index % 6) * 0.2 - 0.5;
+    fy += Math.sin(t * Math.PI) * 3.0;
   }
 
   dummy.position.set(
@@ -129,7 +143,7 @@ function formationMatrix(
     THREE.MathUtils.lerp(attackZ, fz, formationStrength)
   );
   dummy.rotation.set(0, attackAngle + Math.PI / 2, Math.sin(time * 3 + seed) * 0.16 * (1 - formationStrength));
-  dummy.scale.setScalar(0.009);
+  dummy.scale.setScalar(0.0075);
   dummy.updateMatrix();
 }
 
