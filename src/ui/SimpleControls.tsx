@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { Eye, Cpu, Users, RotateCcw } from 'lucide-react';
+import { PixelEmotions } from './PixelEmotions';
 
 export const SimpleControls: React.FC = () => {
   const { snapshot, setTriggerAction, requestReset } = useStore();
@@ -16,5 +17,6 @@ export const SimpleControls: React.FC = () => {
       </div>
       <button onClick={requestReset} className="text-button"><RotateCcw /> Restart scenario</button>
     </section>
+    <PixelEmotions />
   </div>;
 };
