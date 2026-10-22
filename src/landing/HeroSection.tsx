@@ -43,8 +43,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <p
           className="text-white mb-5 sm:mb-6 min-h-[54px] select-none"
           style={{
-            fontSize: 'clamp(28px, 4vw, 50px)', lineHeight: 1.04, fontWeight: 700,
-            letterSpacing: '-.04em', maxWidth: '760px'
+            fontSize: 'clamp(20px, 2.15vw, 31px)', lineHeight: 1.17, fontWeight: 400,
+            letterSpacing: '-.035em', maxWidth: '505px'
           }}
         >
           <span className="landing-hero__lead">Restore Baymax</span>{' '}<span className="landing-hero__message">{displayed}</span>

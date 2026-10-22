@@ -6,6 +6,9 @@ export const SimpleAnalytics: React.FC = () => {
   const { snapshot, eventLog, hiveLearningHistory } = useStore();
   const pct = Math.round(snapshot.extractionProgress * 100);
   const healthPct = Math.round(snapshot.baymaxHealth);
+  const recentEvents = eventLog.slice(-5).reverse();
+  const activeEvent = recentEvents[0];
+  const eventTone = (message: string) => /critical|down|depleted|failed|dash|lunge/i.test(message) ? 'is-alert' : /restored|removed|success|escaped/i.test(message) ? 'is-good' : '';
   const signalPoints = useMemo(() => {
     const values = hiveLearningHistory.length ? hiveLearningHistory : [{ time: 0, value: snapshot.hiveSignal }];
     if (values.length === 1) return `0,76 100,${76 - values[0].value * 64}`;
@@ -33,10 +36,10 @@ export const SimpleAnalytics: React.FC = () => {
       </svg>
       <div className="chart-caption"><span>{hiveLearningHistory[0]?.time.toFixed(0) ?? 0}s</span><span>{snapshot.timeElapsed.toFixed(0)}s</span></div>
     </section>
-    <section className="simple-panel">
+    <section className="simple-panel activity-panel">
       <p className="side-eyebrow">Activity</p>
-      <div className="event-line"><Activity className="w-3.5 h-3.5 text-[#6dffb0]" />{eventLog.length ? eventLog[eventLog.length - 1].message : 'The range is ready. Choose Manual mode or let the swarm run.'}</div>
-      <div className="event-log">{eventLog.slice(-5).reverse().map((event) => <div key={event.id}><time>{event.time.toFixed(1)}s</time>{event.message.replace(/^\[[^\]]+\]\s*/, '')}</div>)}</div>
+      <div className={`event-line ${activeEvent ? eventTone(activeEvent.message) : 'is-idle'}`}><Activity className="w-3.5 h-3.5" />{activeEvent ? activeEvent.message.replace(/^\[[^\]]+\]\s*/, '') : 'Waiting for first contact.'}</div>
+      {recentEvents.length > 1 && <div className="event-log">{recentEvents.slice(1).map((event) => <div key={event.id} className={eventTone(event.message)}><time>{event.time.toFixed(1)}s</time>{event.message.replace(/^\[[^\]]+\]\s*/, '')}</div>)}</div>}
     </section>
   </div>;
 };

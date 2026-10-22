@@ -133,7 +133,9 @@ export const useStore = create<AppState>((set, get) => ({
   togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
 
   resetRequested: false,
-  requestReset: () => set({ resetRequested: true, hiveLearningHistory: [] }),
+  // Start each encounter with a clean operational trace so the activity panel
+  // always represents the current simulation rather than the previous run.
+  requestReset: () => set({ resetRequested: true, hiveLearningHistory: [], eventLog: [] }),
   clearResetRequest: () => set({ resetRequested: false, decisionPrompt: null }),
 
   triggerAction: 'none',
