@@ -159,7 +159,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
         preload="auto"
       />
 
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+      <div className="landing-atmosphere absolute inset-0 pointer-events-none" />
 
       {/* 2. Optional 3D Model Layer over the Portal Video */}
       {use3DModel && (
@@ -176,8 +176,7 @@ export const BackgroundView: React.FC<BackgroundViewProps> = ({ use3DModel = tru
               <PixelRobotHero pointer={pointer} />
             </Suspense>
           </Canvas>
-          {/* Subtle gradient vignette overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent pointer-events-none" />
+          <div className="landing-lightfall absolute inset-0 pointer-events-none" />
         </div>
       )}
     </div>

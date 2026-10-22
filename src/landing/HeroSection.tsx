@@ -26,8 +26,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   }, []);
 
   return (
-    <section className="relative z-[1] w-full h-screen flex flex-col justify-end pb-12 md:justify-center md:pb-0 px-5 sm:px-8 md:px-12 overflow-hidden font-body pointer-events-none">
-      <div className="max-w-2xl relative z-10 pointer-events-auto border-l-2 border-[#F7E600] pl-6 md:pl-8">
+    <section className="landing-hero relative z-[1] w-full h-screen flex flex-col justify-end pb-12 md:justify-center md:pb-0 px-5 sm:px-8 md:px-12 overflow-hidden font-body pointer-events-none">
+      <div className="landing-hero__copy max-w-2xl relative z-10 pointer-events-auto">
         {/* 1. Blurred intro label */}
         <div
           className="pointer-events-none select-none mb-5 sm:mb-6"
@@ -36,7 +36,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             letterSpacing: '.18em', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
           }}
         >
-          PIXEL COMMAND CENTER // SECTOR 04
+          HiveGrid / portal range 04
         </div>
 
         {/* 2. Typewriter text */}
@@ -47,7 +47,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             letterSpacing: '-.04em', maxWidth: '760px'
           }}
         >
-          {displayed}
+          <span className="landing-hero__lead">Restore Baymax</span>{' '}<span className="landing-hero__message">{displayed}</span>
           {!done && (
             <span
               className="inline-block w-[2px] h-[1.1em] bg-white align-middle ml-[2px] animate-cursor-blink"
@@ -66,7 +66,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Primary Action: Launch Simulator */}
           <button
             onClick={onLaunchSimulator}
-            className="inline-flex items-center justify-center bg-[#F7E600] text-[#0A0A0A] font-extrabold text-sm px-6 py-3 border border-[#F7E600] hover:bg-[#FFD400] transition cursor-pointer font-mono"
+            className="landing-cta landing-cta--primary inline-flex items-center justify-center font-extrabold text-sm px-6 py-3 transition cursor-pointer"
           >
             Launch Command Center →
           </button>
@@ -74,11 +74,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Secondary Action: first-time guide */}
           <button
             onClick={() => onOpenModal('hive')}
-            className="inline-flex items-center justify-center bg-[#141414]/90 text-white border border-[#E10600]/40 hover:border-[#E10600] font-bold text-sm px-5 py-3 hover:bg-[#1F1F1F] transition cursor-pointer gap-2 font-mono"
+            className="landing-cta landing-cta--secondary inline-flex items-center justify-center font-bold text-sm px-5 py-3 transition cursor-pointer gap-2"
           >
             <span>How to play</span>
           </button>
         </div>
+      </div>
+      <div className="landing-hero__aside hidden lg:flex pointer-events-auto" aria-label="Mission context">
+        <span className="landing-hero__aside-mark" />
+        <p><b>One command drone.</b><br />A ground swarm with one job:<br />extract the combat chip.</p>
       </div>
     </section>
   );
