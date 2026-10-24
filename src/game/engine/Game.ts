@@ -18,7 +18,7 @@ export class Game {
   private bots:Microbot[]=[];
   private fists:Fist[]=[];
   private flames:Flame[]=[];
-  private baymax:AutonomousBaymax={x:146,y:121,facing:-1,fireTimer:.75,stride:0};
+  private baymax:AutonomousBaymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};
   constructor(canvas:HTMLCanvasElement) { this.canvas=canvas; this.ctx=canvas.getContext('2d')!; this.surface=document.createElement('canvas'); this.surface.width=W; this.surface.height=H; this.sctx=this.surface.getContext('2d')!; this.sctx.imageSmoothingEnabled=false; }
   start() { this.input.attach(); this.resize(); addEventListener('resize',this.resize); this.last=performance.now(); this.raf=requestAnimationFrame(this.frame); }
   stop() { cancelAnimationFrame(this.raf); this.input.detach(); removeEventListener('resize',this.resize); }
@@ -51,7 +51,7 @@ export class Game {
     this.input.endFrame();
   }
   private updateBaymax(dt:number){const direction=this.player.x>this.baymax.x?1:-1;this.baymax.facing=direction;this.baymax.x+=direction*28*dt;this.baymax.x=Math.max(26,Math.min(1180,this.baymax.x));this.baymax.fireTimer-=dt;this.baymax.stride+=dt*4;if(this.baymax.fireTimer<=0){this.flames.push({x:this.baymax.x+direction*13,y:this.baymax.y+12,dir:direction,life:2.5});this.baymax.fireTimer=1.2;}}
-  private reset(){this.player=createPlayer();this.camera=0;this.won=false;this.fists=[];this.flames=[];this.fistCooldown=0;this.baymax={x:146,y:121,facing:-1,fireTimer:.75,stride:0};this.pickups.forEach(p=>p.taken=false);}
+  private reset(){this.player=createPlayer();this.camera=0;this.won=false;this.fists=[];this.flames=[];this.fistCooldown=0;this.baymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};this.pickups.forEach(p=>p.taken=false);}
   private rect(x:number,y:number,w:number,h:number,c:string){this.sctx.fillStyle=c;this.sctx.fillRect(Math.round(x-this.camera),Math.round(y),w,h);}
   private render(){ const c=this.sctx; c.clearRect(0,0,W,H); const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#5b79e7');sky.addColorStop(.55,'#78b5e8');sky.addColorStop(1,'#b1dfd5');c.fillStyle=sky;c.fillRect(0,0,W,H);
     // portal and far scrap silhouettes
