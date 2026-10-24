@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useStore } from './store/useStore';
 import { SimScene } from './scene/SimScene';
@@ -13,6 +13,7 @@ import { CinematicTheaterModal } from './ui/CinematicTheaterModal';
 import { Timeline } from './ui/Timeline';
 import { LandingPage } from './landing/LandingPage';
 import { MissionCompleteOverlay } from './ui/MissionCompleteOverlay';
+const GamePage = lazy(() => import('./game/GamePage'));
 
 export function App() {
   const { 
@@ -22,7 +23,7 @@ export function App() {
     cinematicTheaterOpen,
     setCinematicTheaterOpen
   } = useStore();
-  const [currentView, setCurrentView] = useState<'landing' | 'simulator'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'simulator' | 'game'>(() => window.location.pathname === '/play' ? 'game' : 'landing');
 
   // Check URL query parameters (e.g. ?view=simulator)
   useEffect(() => {
@@ -41,6 +42,8 @@ export function App() {
     setCurrentView('landing');
     window.history.pushState({}, '', window.location.pathname);
   };
+
+  if (currentView === 'game') return <Suspense fallback={<div className="portal-game portal-game--loading">Loading portal escape…</div>}><GamePage /></Suspense>;
 
   // If in landing page view, render full-screen hero landing page
   if (currentView === 'landing') {
