@@ -7,7 +7,7 @@ const W=384, H=216;
 type Pickup={x:number;y:number;taken:boolean};
 type Microbot={x:number;y:number;home:number;dir:1|-1;alive:boolean;phase:number};
 type Fist={x:number;y:number;dir:1|-1;life:number};
-type Flame={x:number;y:number;dir:1|-1;life:number};
+type Flame={x:number;y:number;dir:1|-1;life:number;up?:boolean};
 type AutonomousBaymax={x:number;y:number;facing:1|-1;fireTimer:number;stride:number};
 type Mine={x:number;armed:boolean};
 export class Game {
@@ -38,7 +38,7 @@ export class Game {
       if(this.input.state.fist&&this.fistCooldown===0){this.mines.push({x:this.player.x,armed:true});this.fistCooldown=.45;}
       for(const fist of this.fists){fist.x+=fist.dir*250*dt;fist.life-=dt;}
       this.fists=this.fists.filter(f=>f.life>0);
-      for(const flame of this.flames){flame.x+=flame.dir*95*dt;flame.life-=dt;if(Math.abs(flame.x-this.player.x)<8&&Math.abs(flame.y-this.player.y)<18){this.player.cells=Math.max(0,this.player.cells-1);flame.life=0;}}
+      for(const flame of this.flames){flame.x+=flame.dir*95*dt;if(flame.up)flame.y-=68*dt;flame.life-=dt;if(Math.abs(flame.x-this.player.x)<8&&Math.abs(flame.y-this.player.y)<18){this.player.cells=Math.max(0,this.player.cells-1);flame.life=0;}}
       this.flames=this.flames.filter(f=>f.life>0);
       for(const gear of this.pickups) if(!gear.taken&&Math.abs(this.player.x-gear.x)<10&&Math.abs(this.player.y-gear.y)<18){gear.taken=true;this.player.gears++;}
       for(const bot of this.bots) if(bot.alive){
@@ -51,7 +51,7 @@ export class Game {
     }
     this.input.endFrame();
   }
-  private updateBaymax(dt:number){const direction=this.player.x>this.baymax.x?1:-1;this.baymax.facing=direction;this.baymax.x+=direction*116*dt;this.baymax.x=Math.max(26,this.baymax.x);this.baymax.fireTimer-=dt;this.baymax.stride+=dt*7;for(const mine of this.mines)if(mine.armed&&Math.abs(mine.x-this.baymax.x)<10){mine.armed=false;this.baymax.x-=direction*45;this.baymax.fireTimer=.7;}if(this.baymax.fireTimer<=0){this.flames.push({x:this.baymax.x+direction*13,y:this.baymax.y+12,dir:direction,life:2.5});this.baymax.fireTimer=.9;}}
+  private updateBaymax(dt:number){const direction=this.player.x>this.baymax.x?1:-1;const gap=Math.abs(this.player.x-this.baymax.x);this.baymax.facing=direction;if(gap>54)this.baymax.x+=direction*116*dt;else if(gap<42)this.baymax.x-=direction*72*dt;this.baymax.x=Math.max(26,this.baymax.x);this.baymax.fireTimer-=dt;this.baymax.stride+=dt*7;for(const mine of this.mines)if(mine.armed&&Math.abs(mine.x-this.baymax.x)<10){mine.armed=false;this.baymax.x-=direction*45;this.baymax.fireTimer=.7;}if(this.baymax.fireTimer<=0){this.flames.push({x:this.baymax.x+direction*13,y:this.baymax.y+12,dir:direction,life:2.5});this.flames.push({x:this.baymax.x+direction*5,y:this.baymax.y+5,dir:direction,life:1.7,up:true});this.baymax.fireTimer=.9;}}
   private reset(){this.player=createPlayer();this.camera=0;this.won=false;this.fists=[];this.flames=[];this.mines=[];this.fistCooldown=0;this.baymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};this.pickups.forEach(p=>p.taken=false);}
   private rect(x:number,y:number,w:number,h:number,c:string){this.sctx.fillStyle=c;this.sctx.fillRect(Math.round(x-this.camera),Math.round(y),w,h);}
   private render(){ const c=this.sctx; c.clearRect(0,0,W,H); const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#5b79e7');sky.addColorStop(.55,'#78b5e8');sky.addColorStop(1,'#b1dfd5');c.fillStyle=sky;c.fillRect(0,0,W,H);

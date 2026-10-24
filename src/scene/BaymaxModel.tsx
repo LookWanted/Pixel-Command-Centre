@@ -3,7 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { BaymaxState, PixelState } from '../sim/types';
-import { BaymaxObjAsset, BaymaxWalkMotion } from './BaymaxObjAsset';
+import { BaymaxCadAsset } from './BaymaxCadAsset';
+import { BaymaxWalkMotion } from './BaymaxObjAsset';
 
 interface BaymaxModelProps {
   baymaxState: BaymaxState;
@@ -195,7 +196,7 @@ export const BaymaxModel: React.FC<BaymaxModelProps> = ({
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       <Suspense fallback={null}>
-        <BaymaxObjAsset pacified={isPacified} onReady={handleCadReady} walkMotionRef={walkMotionRef} />
+        <BaymaxCadAsset pacified={isPacified} onReady={handleCadReady} />
       </Suspense>
       {/* The supplied OBJ has no individually addressable eye meshes. A small
           emissive face overlay keeps Baymax's iconic expression clearly red. */}
