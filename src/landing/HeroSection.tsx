@@ -71,6 +71,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             Launch Command Center →
           </button>
 
+          <a
+            href="/play"
+            className="landing-cta landing-cta--secondary inline-flex items-center justify-center font-bold text-sm px-5 py-3 transition cursor-pointer"
+          >
+            Start Portal Escape →
+          </a>
+
           {/* Secondary Action: first-time guide */}
           <button
             onClick={() => onOpenModal('hive')}
