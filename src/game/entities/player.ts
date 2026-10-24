@@ -22,5 +22,5 @@ export const updatePlayer = (p:Player, input:GameInput, dt:number) => {
     if (p.vy >= 0 && p.y + 22 - p.vy * dt <= s.y + 2) { p.y = s.y - 22; p.vy = 0; p.grounded = true; }
     else if (p.vy < 0) { p.y = s.y + s.h; p.vy = 0; }
   }
-  p.x = Math.max(0, Math.min(p.x, 2520));
+  p.x = Math.max(0, Math.min(p.x, 159000));
 };

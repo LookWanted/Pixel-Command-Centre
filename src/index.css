@@ -290,6 +290,9 @@ button { border-radius: 0 !important; }
 button:focus-visible { outline:2px solid #e0ff00; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 
+/* A restrained combat-red bloom gives the landing scene depth without changing its layout. */
+.landing-hero::after { content:''; position:absolute; pointer-events:none; width:34vw; height:34vw; right:-12vw; bottom:-20vw; background:radial-gradient(circle,rgba(225,6,0,.22),transparent 68%); mix-blend-mode:screen; }
+
 /* Final hierarchy pass: the arena reads first; the instruments support it. */
 .landing-hero__message { display:block; max-width:505px; color:rgba(224,234,228,.86); }
 .landing-hero__copy > p { margin-bottom:27px !important; }

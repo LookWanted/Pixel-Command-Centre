@@ -9,6 +9,7 @@ type Microbot={x:number;y:number;home:number;dir:1|-1;alive:boolean;phase:number
 type Fist={x:number;y:number;dir:1|-1;life:number};
 type Flame={x:number;y:number;dir:1|-1;life:number};
 type AutonomousBaymax={x:number;y:number;facing:1|-1;fireTimer:number;stride:number};
+type Mine={x:number;armed:boolean};
 export class Game {
   private canvas:HTMLCanvasElement; private ctx:CanvasRenderingContext2D; private surface:HTMLCanvasElement; private sctx:CanvasRenderingContext2D;
   private input=new Input(); private player:Player=createPlayer(); private raf=0; private last=0; private acc=0; private camera=0; private debug=false; private paused=false; private won=false; private fistCooldown=0;
@@ -19,6 +20,7 @@ export class Game {
   private fists:Fist[]=[];
   private flames:Flame[]=[];
   private baymax:AutonomousBaymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};
+  private mines:Mine[]=[];
   constructor(canvas:HTMLCanvasElement) { this.canvas=canvas; this.ctx=canvas.getContext('2d')!; this.surface=document.createElement('canvas'); this.surface.width=W; this.surface.height=H; this.sctx=this.surface.getContext('2d')!; this.sctx.imageSmoothingEnabled=false; }
   start() { this.input.attach(); this.resize(); addEventListener('resize',this.resize); this.last=performance.now(); this.raf=requestAnimationFrame(this.frame); }
   stop() { cancelAnimationFrame(this.raf); this.input.detach(); removeEventListener('resize',this.resize); }
@@ -33,7 +35,7 @@ export class Game {
       this.player.y=Math.max(42,Math.min(151,this.player.y));
       this.updateBaymax(dt);
       this.fistCooldown=Math.max(0,this.fistCooldown-dt);
-      if(this.input.state.fist&&this.fistCooldown===0){this.fists.push({x:this.player.x+this.player.facing*9,y:this.player.y+9,dir:this.player.facing,life:.18});this.fistCooldown=.22;}
+      if(this.input.state.fist&&this.fistCooldown===0){this.mines.push({x:this.player.x,armed:true});this.fistCooldown=.45;}
       for(const fist of this.fists){fist.x+=fist.dir*250*dt;fist.life-=dt;}
       this.fists=this.fists.filter(f=>f.life>0);
       for(const flame of this.flames){flame.x+=flame.dir*95*dt;flame.life-=dt;if(Math.abs(flame.x-this.player.x)<8&&Math.abs(flame.y-this.player.y)<18){this.player.cells=Math.max(0,this.player.cells-1);flame.life=0;}}
@@ -45,13 +47,12 @@ export class Game {
         if(this.fists.some(f=>Math.abs(f.x-bot.x)<12&&Math.abs(f.y-bot.y)<13)){bot.alive=false;this.player.gears+=2;}
         if(Math.abs(this.player.x-bot.x)<9&&Math.abs(this.player.y-bot.y)<17){this.player.cells=Math.max(0,this.player.cells-1);bot.home+=bot.dir*26;this.player.x-=this.player.facing*18;}
       }
-      if(this.player.x>1194&&this.pickups.filter(p=>p.taken).length>=6)this.won=true;
       const look=this.player.facing*36; this.camera+=(this.player.x-W*.43+look-this.camera)*Math.min(1,dt*5);
     }
     this.input.endFrame();
   }
-  private updateBaymax(dt:number){const direction=this.player.x>this.baymax.x?1:-1;this.baymax.facing=direction;this.baymax.x+=direction*28*dt;this.baymax.x=Math.max(26,Math.min(1180,this.baymax.x));this.baymax.fireTimer-=dt;this.baymax.stride+=dt*4;if(this.baymax.fireTimer<=0){this.flames.push({x:this.baymax.x+direction*13,y:this.baymax.y+12,dir:direction,life:2.5});this.baymax.fireTimer=1.2;}}
-  private reset(){this.player=createPlayer();this.camera=0;this.won=false;this.fists=[];this.flames=[];this.fistCooldown=0;this.baymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};this.pickups.forEach(p=>p.taken=false);}
+  private updateBaymax(dt:number){const direction=this.player.x>this.baymax.x?1:-1;this.baymax.facing=direction;this.baymax.x+=direction*116*dt;this.baymax.x=Math.max(26,this.baymax.x);this.baymax.fireTimer-=dt;this.baymax.stride+=dt*7;for(const mine of this.mines)if(mine.armed&&Math.abs(mine.x-this.baymax.x)<10){mine.armed=false;this.baymax.x-=direction*45;this.baymax.fireTimer=.7;}if(this.baymax.fireTimer<=0){this.flames.push({x:this.baymax.x+direction*13,y:this.baymax.y+12,dir:direction,life:2.5});this.baymax.fireTimer=.9;}}
+  private reset(){this.player=createPlayer();this.camera=0;this.won=false;this.fists=[];this.flames=[];this.mines=[];this.fistCooldown=0;this.baymax={x:146,y:136,facing:-1,fireTimer:.75,stride:0};this.pickups.forEach(p=>p.taken=false);}
   private rect(x:number,y:number,w:number,h:number,c:string){this.sctx.fillStyle=c;this.sctx.fillRect(Math.round(x-this.camera),Math.round(y),w,h);}
   private render(){ const c=this.sctx; c.clearRect(0,0,W,H); const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#5b79e7');sky.addColorStop(.55,'#78b5e8');sky.addColorStop(1,'#b1dfd5');c.fillStyle=sky;c.fillRect(0,0,W,H);
     // portal and far scrap silhouettes
@@ -59,7 +60,7 @@ export class Game {
     c.fillStyle='#5a9f87';for(let i=0;i<12;i++){const x=((i*49-this.camera*.15)%470+470)%470;c.fillRect(x,108-(i%4)*9,38,75);} c.fillStyle='#246552';for(let i=0;i<13;i++){const x=((i*67-this.camera*.35)%520+520)%520;c.fillRect(x,134-(i%3)*11,55,50);}
     for(const d of this.dust){d.x-=d.s;if(d.x<0)d.x=W; c.fillStyle='rgba(230,245,230,.28)';c.fillRect(d.x,d.y,1,1);}
     for(const p of platforms){this.rect(p.x,p.y,p.w,p.h,'#54382a');this.rect(p.x,p.y,p.w,2,'#5bbf5b');this.rect(p.x,p.y+2,p.w,2,'#8be08a');for(let x=p.x;x<p.x+p.w;x+=16){this.rect(x,p.y+5,1,p.h-5,'#6b4a33');this.rect(x+7,p.y+8,3,2,'#a58b73');}}
-    this.drawPickups();this.drawPortal();this.drawBaymax();this.drawPixel();this.drawFists();this.drawFlames(); this.drawHud(); this.ctx.fillStyle='#101312';this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);this.ctx.drawImage(this.surface,0,0,this.canvas.width,this.canvas.height);
+    this.drawPickups();this.drawPortal();this.drawMines();this.drawBaymax();this.drawPixel();this.drawFists();this.drawFlames(); this.drawHud(); this.ctx.fillStyle='#101312';this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);this.ctx.drawImage(this.surface,0,0,this.canvas.width,this.canvas.height);
   }
   private drawPickups(){for(const p of this.pickups)if(!p.taken){const x=Math.round(p.x-this.camera),y=p.y;this.sctx.fillStyle='#ffdf53';this.sctx.fillRect(x-2,y,5,7);this.sctx.fillStyle='#fff4b3';this.sctx.fillRect(x-1,y+1,2,5);}}
   private drawMicrobots(){for(const b of this.bots)if(b.alive){const x=Math.round(b.x-this.camera),y=Math.round(b.y+Math.sin(performance.now()/180+b.phase)*2);const c=this.sctx;c.fillStyle='#20213d';c.fillRect(x-5,y-5,10,6);c.fillStyle='#5ce5db';c.fillRect(x-3,y-3,2,2);c.fillRect(x+1,y-3,2,2);c.fillStyle='#0d1023';c.fillRect(x-6,y+1,3,3);c.fillRect(x+3,y+1,3,3);}}
@@ -68,5 +69,6 @@ export class Game {
   private drawPixel(){const p=this.player,x=Math.round(p.x-this.camera),y=Math.round(p.y),c=this.sctx;c.save();c.translate(x+5,y+11);c.scale(p.facing,1);c.translate(-5,-11);c.fillStyle='#101312';c.fillRect(0,7,11,12);c.fillStyle='#4a5560';c.fillRect(1,6,9,10);c.fillStyle='#2b3340';c.fillRect(2,4,7,4);c.fillStyle='#4fc3f7';c.fillRect(3,6,2,2);c.fillRect(7,6,2,2);c.fillStyle='#b692f6';c.fillRect(3,17,2,3);c.fillRect(7,17,2,3);c.restore();}
   private drawBaymax(){const b=this.baymax,x=Math.round(b.x-this.camera),y=Math.round(b.y),c=this.sctx;const frame=this.walkFrames[Math.floor(b.stride)%2];c.save();c.translate(x+8,y+12);c.scale(b.facing,1);c.translate(-8,-12);if(frame.complete&&frame.naturalWidth)c.drawImage(frame,-11,-15+Math.sin(b.stride)*1,36,53);else{c.fillStyle='#f2f4f5';c.fillRect(2,5,13,20);c.fillRect(4,0,9,8);c.fillStyle='#101312';c.fillRect(6,3,1,1);c.fillRect(10,3,1,1);}c.restore();}
   private drawFlames(){for(const f of this.flames){const x=Math.round(f.x-this.camera),y=Math.round(f.y),c=this.sctx;c.fillStyle='#a83232';c.fillRect(x-5,y-3,10,6);c.fillStyle='#ff5c5c';c.fillRect(x-3,y-2,8,4);c.fillStyle='#ffd54f';c.fillRect(x-1,y-1,4,2);}}
+  private drawMines(){for(const m of this.mines)if(m.armed){const x=Math.round(m.x-this.camera),c=this.sctx;c.fillStyle='#2b3340';c.fillRect(x-4,166,8,5);c.fillStyle='#ff5c5c';c.fillRect(x-1,165,2,2);}}
   private drawHud(){const c=this.sctx;c.fillStyle='#101312';c.fillRect(7,7,116,17);c.fillStyle='#f2f4f5';c.font='8px monospace';c.fillText(`PIXEL ${'▰'.repeat(this.player.cells)}  ${String(this.player.gears).padStart(3,'0')}`,11,18);c.font='7px monospace';c.fillText('PORTAL',329,13);c.fillStyle='#4b5560';c.fillRect(297,17,76,5);c.fillStyle='#2fd3a0';c.fillRect(297,17,Math.min(76,this.player.x/1216*76),5); if(this.paused){c.fillStyle='#101312';c.fillRect(101,77,182,45);c.fillStyle='#f2f4f5';c.font='15px monospace';c.fillText('PAUSED',142,96);c.font='8px monospace';c.fillText('P / ESC TO RESUME',128,109);} if(this.won){c.fillStyle='#101312';c.fillRect(80,70,224,62);c.fillStyle='#2fd3a0';c.font='15px monospace';c.fillText('PORTAL REACHED',115,96);c.fillStyle='#f2f4f5';c.font='8px monospace';c.fillText('PRESS R TO REPLAY.',132,112);} if(this.player.cells===0){c.fillStyle='#101312';c.fillRect(80,70,224,62);c.fillStyle='#ff5c5c';c.font='15px monospace';c.fillText('PIXEL DOWN',134,96);c.fillStyle='#f2f4f5';c.font='8px monospace';c.fillText('PRESS R TO TRY AGAIN.',120,112);} if(this.debug){c.fillStyle='#a6e34f';c.font='7px monospace';c.fillText(`F3 X:${this.player.x|0} Y:${this.player.y|0}`,8,207);} }
 }

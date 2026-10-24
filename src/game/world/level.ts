@@ -1,5 +1,5 @@
 export const TILE = 16;
-export const LEVEL_WIDTH = 160;
+export const LEVEL_WIDTH = 10000;
 export const GROUND_Y = 174;
 
 export type Solid = { x: number; y: number; w: number; h: number };
